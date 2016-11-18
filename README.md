@@ -3,7 +3,7 @@ A command line scientific calculator written in C++. The calculator converts the
 
 Building Calc
 -------------
-I have provided makefiles for both Windows (compiled using MS Visual Studio C++ 2015 Community Edition and tested on Windows 10) and Unic (compiled using gcc and tested on Ubuntu 16.04 64-bit).
+I have provided makefiles for both Windows (compiled using MS Visual Studio C++ 2015 Community Edition and tested on Windows 10) and Unix (compiled using gcc and tested on Ubuntu 16.04 64-bit).
 
 Using Calc
 ----------
