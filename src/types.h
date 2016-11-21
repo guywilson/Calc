@@ -49,7 +49,9 @@ typedef enum
 	ArcCosine 	= 0x44,
 	ArcTangent 	= 0x45,
 	SquareRoot 	= 0x46,
-	Logarithm 	= 0x47
+	Logarithm 	= 0x47,
+	Logarithm10 = 0x48,
+	Factorial	= 0x49
 }
 Func;
 

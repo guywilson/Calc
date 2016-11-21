@@ -41,20 +41,20 @@ LFLAGS_REL=/MACHINE:X64 /NOLOGO /OUT:$(TARGET)
 LFLAGS=$(LFLAGS_REL)
 
 # Object files (in linker ',' seperated format)
-OBJFILES=$(BUILD)\main.obj $(BUILD)\token.obj $(BUILD)\calc.obj $(BUILD)\stack.obj $(BUILD)\exception.obj $(BUILD)\test.obj
+OBJFILES=$(BUILD)\main.obj $(BUILD)\token.obj $(BUILD)\calc.obj $(BUILD)\stack.obj $(BUILD)\exception.obj $(BUILD)\debug.obj $(BUILD)\test.obj
 
 # Target
 all: $(TARGET)
 
 # Compile C source files
 #
-$(BUILD)\main.obj: $(SOURCE)\main.cpp $(SOURCE)\calc.h $(SOURCE)\token.h $(SOURCE)\types.h $(SOURCE)\exception.h
+$(BUILD)\main.obj: $(SOURCE)\main.cpp $(SOURCE)\calc.h $(SOURCE)\token.h $(SOURCE)\types.h $(SOURCE)\exception.h $(SOURCE)\debug.h
 	$(CPP) $(CPPFLAGS) -Fd$(BUILD)\main.pdb -Fo$(BUILD)\main.obj $(SOURCE)\main.cpp
 
-$(BUILD)\token.obj: $(SOURCE)\token.cpp $(SOURCE)\token.h $(SOURCE)\types.h $(SOURCE)\exception.h
+$(BUILD)\token.obj: $(SOURCE)\token.cpp $(SOURCE)\token.h $(SOURCE)\types.h $(SOURCE)\exception.h $(SOURCE)\debug.h
 	$(CPP) $(CPPFLAGS) -Fd$(BUILD)\token.pdb -Fo$(BUILD)\token.obj $(SOURCE)\token.cpp
 
-$(BUILD)\calc.obj: $(SOURCE)\calc.cpp $(SOURCE)\calc.h $(SOURCE)\token.h $(SOURCE)\stack.h $(SOURCE)\types.h $(SOURCE)\exception.h
+$(BUILD)\calc.obj: $(SOURCE)\calc.cpp $(SOURCE)\calc.h $(SOURCE)\token.h $(SOURCE)\stack.h $(SOURCE)\types.h $(SOURCE)\exception.h $(SOURCE)\debug.h
 	$(CPP) $(CPPFLAGS) -Fd$(BUILD)\calc.pdb -Fo$(BUILD)\calc.obj $(SOURCE)\calc.cpp
 
 $(BUILD)\stack.obj: $(SOURCE)\stack.cpp $(SOURCE)\stack.h $(SOURCE)\token.h $(SOURCE)\types.h $(SOURCE)\exception.h
@@ -62,6 +62,9 @@ $(BUILD)\stack.obj: $(SOURCE)\stack.cpp $(SOURCE)\stack.h $(SOURCE)\token.h $(SO
 
 $(BUILD)\exception.obj: $(SOURCE)\exception.cpp $(SOURCE)\exception.h $(SOURCE)\types.h
 	$(CPP) $(CPPFLAGS) -Fd$(BUILD)\exception.pdb -Fo$(BUILD)\exception.obj $(SOURCE)\exception.cpp
+
+$(BUILD)\debug.obj: $(SOURCE)\debug.cpp $(SOURCE)\debug.h
+	$(CPP) $(CPPFLAGS) -Fd$(BUILD)\debug.pdb -Fo$(BUILD)\debug.obj $(SOURCE)\debug.cpp
 
 $(BUILD)\test.obj: $(SOURCE)\test.cpp $(SOURCE)\test.h $(SOURCE)\token.h $(SOURCE)\types.h
 	$(CPP) $(CPPFLAGS) -Fd$(BUILD)\test.pdb -Fo$(BUILD)\test.obj $(SOURCE)\test.cpp

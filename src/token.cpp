@@ -7,6 +7,7 @@
 #include "secure_func.h"
 #include "token.h"
 #include "exception.h"
+#include "debug.h"
 
 using namespace std;
 
@@ -17,7 +18,12 @@ Token::Token(char * pszToken)
 
 Token::Token(char * pszToken, const char * pszClassName) : Token(pszToken)
 {
-	//cout << "Creating Token of type " << pszClassName << " with token '" << pszToken << "'" << endl;
+	DebugHelper * dbg = DebugHelper::getInstance();
+	
+	if (dbg->getDebugState()) {
+		cout << "Creating Token of type " << pszClassName << " with token '" << pszToken << "'" << endl;
+	}
+	
 	setClass(pszClassName);
 }
 
@@ -134,6 +140,12 @@ bool Token::isFunctionSquareRoot(char * pszToken) {
 bool Token::isFunctionLogarithm(char * pszToken) {
 	return !strncmp(pszToken, "log", 3);
 }
+bool Token::isFunctionLogarithm10(char * pszToken) {
+	return !strncmp(pszToken, "log10", 5);
+}
+bool Token::isFunctionFactorial(char * pszToken) {
+	return !strncmp(pszToken, "fact", 4);
+}
 bool Token::isFunction(char * pszToken) {
 	return (
 		isFunctionSine(pszToken) || 
@@ -143,7 +155,9 @@ bool Token::isFunction(char * pszToken) {
 		isFunctionArcCosine(pszToken) || 
 		isFunctionArcTangent(pszToken) || 
 		isFunctionSquareRoot(pszToken) || 
-		isFunctionLogarithm(pszToken));
+		isFunctionLogarithm(pszToken) ||
+		isFunctionLogarithm10(pszToken) ||
+		isFunctionFactorial(pszToken));
 }
 
 
@@ -362,6 +376,14 @@ Function::Function(char * pszToken) : Operator(pszToken, "Function")
 		function = Logarithm;
 		numArguments = 1;
 	}
+	else if (Token::isFunctionLogarithm10(pszToken)) {
+		function = Logarithm10;
+		numArguments = 1;
+	}
+	else if (Token::isFunctionFactorial(pszToken)) {
+		function = Factorial;
+		numArguments = 1;
+	}
 	
 	setPrecedence(5);
 }
@@ -406,8 +428,32 @@ Operand * Function::evaluate(Operand * arg1)
 			result = new Operand(log(arg1->getValue()));
 			break;
 		
+		case Logarithm10:
+			result = new Operand(log10(arg1->getValue()));
+			break;
+		
+		case Factorial:
+			result = new Operand((double)_factorial((long)arg1->getValue()));
+			break;
+		
 		default:
 			break;
+	}
+	
+	return result;
+}
+
+bigint Function::_factorial(unsigned long arg)
+{
+	unsigned long	index;
+	bigint			result;
+	
+	result = arg;
+	
+	if (arg > 1) {
+		for (index = arg - 1;index > 0;index--) {
+			result *= index;
+		}
 	}
 	
 	return result;
@@ -510,12 +556,37 @@ int CalcTokenizer::_findNextTokenPos()
 			else {
 				/*
 				** If this is the '-' character and if the next char is a digit (0-9)
-				** and the previous char is not a ')' then this must be a -ve number, 
+				** and the previous char is not a ')' or a digit then this must be a -ve number, 
 				** not the '-' operator...
 				*/
-				if ((ch == '-' && isdigit(pszExpression[i + 1])) && (i > 1 && !Token::isBraceRight(&pszExpression[i - 1]))) {
-					continue;
-				}
+				if (ch == '-' && isdigit(pszExpression[i + 1])) {
+					bool isNegativeOperand = false;
+					
+					if (i > 1) {
+						bool isPreviousCharBrace = Token::isBraceRight(&pszExpression[i - 1]);
+						bool isPreviousCharDigit = isdigit(pszExpression[i - 1]) != 0 ? true : false;
+						
+						if (!isPreviousCharBrace && !isPreviousCharDigit) {
+							isNegativeOperand = true;
+						}
+						else {
+							isNegativeOperand = false;
+						}
+					}
+					else if (i == 0) {
+						// We're at the begininng of the expression, must be
+						// a -ve operand
+						isNegativeOperand = true;
+					}
+
+					if (isNegativeOperand) {
+						// Found a -ve number...
+						continue;
+					}
+					else {
+						return i + 1;
+					}
+				} 
 				else {
 					// The token is the token we want to return...
 					return i + 1;

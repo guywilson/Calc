@@ -7,6 +7,7 @@
 #include "stack.h"
 #include "types.h"
 #include "exception.h"
+#include "debug.h"
 
 using namespace std;
 
@@ -157,6 +158,8 @@ double Calculator::evaluate(char * pszExpression, size_t bufferLength)
 	
 	Queue * outputQueue = new Queue();
 	
+	DebugHelper * dbg = DebugHelper::getInstance();
+	
 	/*
 	** Convert the calculation in infix notation to the postfix notation
 	** (Reverse Polish Notation) using the 'shunting yard algorithm'...
@@ -168,7 +171,9 @@ double Calculator::evaluate(char * pszExpression, size_t bufferLength)
 	while (outputQueue->getItemCount() > 0) {
 		Token * t = (Token *)outputQueue->getItem();
 		
-		//cout << "RPN: Got Token '" << t->getToken() << "'" << endl;
+		if (dbg->getDebugState()) {
+			cout << "RPN: Got Token '" << t->getToken() << "'" << endl;
+		}
 		
 		if (t->isOperand()) {
 			stack->push(t);

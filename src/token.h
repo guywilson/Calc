@@ -61,6 +61,8 @@ class Token
 		static bool		isFunctionArcTangent(char * pszToken);
 		static bool		isFunctionSquareRoot(char * pszToken);
 		static bool		isFunctionLogarithm(char * pszToken);
+		static bool		isFunctionLogarithm10(char * pszToken);
+		static bool		isFunctionFactorial(char * pszToken);
 		static bool		isFunction(char * pszToken);
 };
 
@@ -143,6 +145,7 @@ class Function : public Operator
 	private:
 		Func			function;
 		int				numArguments;
+		bigint			_factorial(unsigned long arg);
 		
 	public:
 		Function(char *pszToken);

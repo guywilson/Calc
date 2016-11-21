@@ -10,6 +10,7 @@
 #include "calc.h"
 #include "test.h"
 #include "exception.h"
+#include "debug.h"
 
 #define CALC_BUFFER_LEN				1024
 
@@ -25,6 +26,7 @@ int main(int argc, char *argv[])
 	int				i;
 	bool			loop;
 	bool			hasParams = false;
+	DebugHelper *	dbg;
 	
 	szCalculation[0] = 0;
 	
@@ -36,6 +38,8 @@ int main(int argc, char *argv[])
 		hasParams = true;
 	}
 
+	dbg = DebugHelper::getInstance();
+	
 	loop = true;
 		
 	while (loop) {
@@ -54,6 +58,12 @@ int main(int argc, char *argv[])
 		}
 		else if (strncmp(szCalculation, "test", 4) == 0) {
 			runTestSuite();
+		}
+		else if (strncmp(szCalculation, "dbgon", 5) == 0) {
+			dbg->setDebugOn();
+		}
+		else if (strncmp(szCalculation, "dbgoff", 6) == 0) {
+			dbg->setDebugOff();
 		}
 		else if (strncmp(szCalculation, "help", 4) == 0 || strncmp(szCalculation, "?", 1) == 0) {
 			printHelp();
@@ -109,12 +119,16 @@ void printHelp(void)
 	cout << "\tacos(x)\treturn the angle in degrees of arccosine(x)" << endl;
 	cout << "\tatan(x)\treturn the angle in degrees of arctangent(x)" << endl;
 	cout << "\tsqrt(x)\treturn the square root of x" << endl;
-	cout << "\tlog(x)\treturn the log of x" << endl << endl;
+	cout << "\tlog(x)\treturn the log of x" << endl;
+	cout << "\tlog10(x)\treturn the log of x" << endl;
+	cout << "\tfact(x)\treturn the factorial of x" << endl << endl;
 	cout << "Constants supported:" << endl;
 	cout << "\tpi\tthe ratio pi" << endl;
 	cout << "\tc\tthe speed of light in a vacuum" << endl << endl;
 	cout << "Commands supported:" << endl;
 	cout << "\ttest\tSelf test of the calculator" << endl;
 	cout << "\thelp\tThis help text" << endl;
+	cout << "\tdbgon\tTurn on debugging output" << endl;
+	cout << "\tdbgoff\tTurn off debugging output" << endl;
 	cout << "\texit\tExit the calculator" << endl << endl;
 }
