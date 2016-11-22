@@ -51,7 +51,8 @@ typedef enum
 	SquareRoot 	= 0x46,
 	Logarithm 	= 0x47,
 	Logarithm10 = 0x48,
-	Factorial	= 0x49
+	Factorial	= 0x49,
+	Memory		= 0x4A
 }
 Func;
 

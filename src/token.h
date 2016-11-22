@@ -65,6 +65,7 @@ class Token
 		static bool		isFunctionLogarithm(char * pszToken);
 		static bool		isFunctionLogarithm10(char * pszToken);
 		static bool		isFunctionFactorial(char * pszToken);
+		static bool		isFunctionMemory(char * pszToken);
 		static bool		isFunction(char * pszToken);
 };
 
@@ -157,6 +158,8 @@ class Function : public Operator
 		Function(char *pszToken);
 		
 		Operand *		evaluate(Operand * arg1);
+		
+		static void		memoryStore(int memoryNum, double value);
 		
 		int				getNumArguments() {
 							return numArguments;

@@ -49,6 +49,7 @@ class Calculator
 		
 	public:
 		static double	evaluate(char * pszExpression, size_t bufferLength);
+		static void		store(int memoryNum, double result);
 };
 
 #endif

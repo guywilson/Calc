@@ -258,3 +258,8 @@ double Calculator::evaluate(char * pszExpression, size_t bufferLength)
 	
 	return result;
 }
+
+void Calculator::store(int memoryNum, double result)
+{
+	Function::memoryStore(memoryNum, result);
+}

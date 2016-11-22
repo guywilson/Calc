@@ -22,7 +22,7 @@ void printHelp(void);
 int main(int argc, char *argv[])
 {
 	char			szCalculation[CALC_BUFFER_LEN];
-	double			result;
+	double			result = 0.0;
 	int				i;
 	bool			loop;
 	bool			hasParams = false;
@@ -64,6 +64,15 @@ int main(int argc, char *argv[])
 		}
 		else if (strncmp(szCalculation, "dbgoff", 6) == 0) {
 			dbg->setDebugOff();
+		}
+		else if (strncmp(szCalculation, "memst", 5) == 0) {
+			int memoryNum = 0;
+			
+			if (strlen(szCalculation) > 5) {
+				memoryNum = atoi(&szCalculation[5]);
+			}
+			
+			Calculator::store(memoryNum, result);
 		}
 		else if (strncmp(szCalculation, "help", 4) == 0 || strncmp(szCalculation, "?", 1) == 0) {
 			printHelp();
@@ -121,11 +130,13 @@ void printHelp(void)
 	cout << "\tsqrt(x)\treturn the square root of x" << endl;
 	cout << "\tlog(x)\treturn the log of x" << endl;
 	cout << "\tlog10(x)\treturn the log of x" << endl;
-	cout << "\tfact(x)\treturn the factorial of x" << endl << endl;
+	cout << "\tfact(x)\treturn the factorial of x" << endl;
+	cout << "\tmem(n)\tthe value in memory location n, where n is 0 - 9" << endl << endl;
 	cout << "Constants supported:" << endl;
 	cout << "\tpi\tthe ratio pi" << endl;
 	cout << "\tc\tthe speed of light in a vacuum" << endl << endl;
 	cout << "Commands supported:" << endl;
+	cout << "\tmemstn\tStore the last result in memory location n (0 - 9)" << endl;
 	cout << "\ttest\tSelf test of the calculator" << endl;
 	cout << "\thelp\tThis help text" << endl;
 	cout << "\tdbgon\tTurn on debugging output" << endl;

@@ -11,6 +11,9 @@
 
 using namespace std;
 
+static double _memory[10] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+
+
 Token::Token(char * pszToken)
 {
 	strcpy_s(this->_szToken, TOKEN_LENGTH, pszToken);
@@ -146,6 +149,9 @@ bool Token::isFunctionLogarithm10(char * pszToken) {
 bool Token::isFunctionFactorial(char * pszToken) {
 	return !strncmp(pszToken, "fact", 4);
 }
+bool Token::isFunctionMemory(char * pszToken) {
+	return !strncmp(pszToken, "mem", 3);
+}
 bool Token::isFunction(char * pszToken) {
 	return (
 		isFunctionSine(pszToken) || 
@@ -157,7 +163,8 @@ bool Token::isFunction(char * pszToken) {
 		isFunctionSquareRoot(pszToken) || 
 		isFunctionLogarithm(pszToken) ||
 		isFunctionLogarithm10(pszToken) ||
-		isFunctionFactorial(pszToken));
+		isFunctionFactorial(pszToken) ||
+		isFunctionMemory(pszToken));
 }
 
 
@@ -384,6 +391,10 @@ Function::Function(char * pszToken) : Operator(pszToken, "Function")
 		function = Factorial;
 		numArguments = 1;
 	}
+	else if (Token::isFunctionMemory(pszToken)) {
+		function = Memory;
+		numArguments = 1;
+	}
 	
 	setPrecedence(5);
 }
@@ -436,6 +447,10 @@ Operand * Function::evaluate(Operand * arg1)
 			result = new Operand((double)_factorial((long)arg1->getValue()));
 			break;
 		
+		case Memory:
+			result = new Operand(_memory[(int)arg1->getValue()]);
+			break;
+		
 		default:
 			break;
 	}
@@ -457,6 +472,11 @@ bigint Function::_factorial(unsigned long arg)
 	}
 	
 	return result;
+}
+
+void Function::memoryStore(int memoryNum, double value)
+{
+	_memory[memoryNum] = value;
 }
 
 
