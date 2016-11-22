@@ -21,6 +21,8 @@ class Token
 		Token() {}
 		Token(char *pszToken);
 		
+		virtual			~Token() {}
+		
 		char *			getToken();
 		char *			getClass();
 
@@ -76,6 +78,8 @@ class Operand : public Token
 		Operand(double x);
 		Operand(char * pszToken, const char * pszClassName);
 		
+		virtual 		~Operand() {}
+		
 		double			getValue();
 		
 		virtual bool	isOperand() {
@@ -96,6 +100,8 @@ class Operator : public Token
 	public:
 		Operator(char *pszToken);
 		Operator(char *pszToken, const char *pszClassName);
+		
+		virtual			~Operator() {}
 		
 		int				getPrecedence();
 		Associativity	getAssociativity();
