@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 		else {
 			try {
 				result = Calculator::evaluate(szCalculation, CALC_BUFFER_LEN);
-				cout << szCalculation << " = " << std::setprecision(12) << result << endl;
+				printf("%s = %.10f\n", szCalculation, result);
 			}
 			catch (Exception * e) {
 				cout << "Caught exception: " << e->getExceptionString() << endl;

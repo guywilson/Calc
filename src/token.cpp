@@ -402,8 +402,8 @@ Function::Function(char * pszToken) : Operator(pszToken, "Function")
 Operand * Function::evaluate(Operand * arg1)
 {
 	Operand *		result;
-	double			degreesToRadians = (3.1415926536 / 180.0);
-	double			radiansToDegrees = (180.0 / 3.1415926536);
+	double			degreesToRadians = (3.14159265358979323846 / 180.0);
+	double			radiansToDegrees = (180.0 / 3.14159265358979323846);
 
 	switch (this->function) {
 		
