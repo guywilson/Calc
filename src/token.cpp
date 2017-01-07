@@ -330,7 +330,7 @@ double Constant::_pi()
 	/*
 	** Calculate pi using 4 million terms of the series...
 	*/
-	for (i = 0;i < 2000000;i++) {
+	for (i = 0;i < 1000000;i++) {
 		pi = pi + (numerator / ((double)(d1 * d2 * d3))) - (numerator / ((double)(d3 * d4 * d5)));
 
 		d1 += 4L;

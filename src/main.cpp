@@ -1,6 +1,4 @@
 #include <iostream>
-#include <limits>
-#include <iomanip>
 #include <stdio.h>
 #include <string.h>
 
@@ -39,11 +37,16 @@ int main(int argc, char *argv[])
 	}
 
 	dbg = DebugHelper::getInstance();
-	
+
+	if (!hasParams) {
+		cout << "Welcome to Calc. A command line scientific calculator." << endl;
+		cout << "Type a calculation or command at the prompt, type 'help' for info." << endl << endl;
+	}
+
 	loop = true;
-		
+	
 	while (loop) {
-		if (!(hasParams && strlen(szCalculation) > 0)) {
+		if (!hasParams) {
 			cout << "calc> ";
 			cin.getline(szCalculation, CALC_BUFFER_LEN);
 			removeNewLine(szCalculation, CALC_BUFFER_LEN);
@@ -80,17 +83,13 @@ int main(int argc, char *argv[])
 		else {
 			try {
 				result = Calculator::evaluate(szCalculation, CALC_BUFFER_LEN);
-				printf("%s = %.10f\n", szCalculation, result);
+				printf("%s = %.12f\n", szCalculation, result);
 			}
 			catch (Exception * e) {
 				cout << "Caught exception: " << e->getExceptionString() << endl;
 			}
 		}
 		
-		/*
-		** Just exit if we supplied the calculation
-		** as a program argument...
-		*/
 		if (hasParams) {
 			loop = false;
 		}
