@@ -1,3 +1,6 @@
+#include <string>
+#include <cln/cln.h>
+
 #include "types.h"
 
 #ifndef _INCL_TOKEN
@@ -5,26 +8,30 @@
 
 #define TOKEN_LENGTH		64
 #define CLASSNAME_LENGTH	16
+#define FLOAT_PRECISION		64
+
+using namespace std;
+using namespace cln;
 
 class Token
 {
 	private:
-		char			_szToken[TOKEN_LENGTH];
-		char			_szClassName[CLASSNAME_LENGTH];
-	
-	protected:
-		Token(char *pszToken, const char *pszClassName);
+		string			_token;
+		string			_className;
 
-		void			setClass(const char *pszClassName);
-		
+	protected:
+		Token(const string & token, const string & className);
+
+		void			setClass(const string & className);
+
 	public:
 		Token() {}
-		Token(char *pszToken);
-		
+		Token(const string & token);
+
 		virtual			~Token() {}
-		
-		char *			getToken();
-		char *			getClass();
+
+		string	&		getToken();
+		string	&		getClass();
 
 		virtual bool	isOperand() {
 							return false;
@@ -41,48 +48,74 @@ class Token
 		virtual bool	isFunction() {
 							return false;
 						}
-		
-		static bool		isOperand(char * pszToken);
-		static bool		isOperatorPlus(char * pszToken);
-		static bool		isOperatorMinus(char * pszToken);
-		static bool		isOperatorMultiply(char * pszToken);
-		static bool		isOperatorDivide(char * pszToken);
-		static bool		isOperatorPower(char * pszToken);
-		static bool		isOperator(char * pszToken);
-		static bool		isBraceLeft(char * pszToken);
-		static bool		isBraceRight(char * pszToken);
-		static bool		isBrace(char * pszToken);
-		static bool		isConstantPi(char * pszToken);
-		static bool		isConstantC(char * pszToken);
-		static bool		isConstant(char * pszToken);
-		static bool		isFunctionSine(char * pszToken);
-		static bool		isFunctionCosine(char * pszToken);
-		static bool		isFunctionTangent(char * pszToken);
-		static bool		isFunctionArcSine(char * pszToken);
-		static bool		isFunctionArcCosine(char * pszToken);
-		static bool		isFunctionArcTangent(char * pszToken);
-		static bool		isFunctionSquareRoot(char * pszToken);
-		static bool		isFunctionLogarithm(char * pszToken);
-		static bool		isFunctionLogarithm10(char * pszToken);
-		static bool		isFunctionFactorial(char * pszToken);
-		static bool		isFunctionMemory(char * pszToken);
-		static bool		isFunction(char * pszToken);
+
+		static bool		isOperand(const string & token);
+		static bool		isOperatorPlus(const string & token);
+		static bool		isOperatorMinus(const string & token);
+		static bool		isOperatorMultiply(const string & token);
+		static bool		isOperatorDivide(const string & token);
+		static bool		isOperatorPower(const string & token);
+		static bool		isOperatorMod(const string & token);
+		static bool		isOperatorAND(const string & token);
+		static bool		isOperatorOR(const string & token);
+		static bool		isOperatorXOR(const string & token);
+		static bool		isOperator(const string & token);
+		static bool		isBraceLeft(const string & token);
+		static bool		isBraceRight(const string & token);
+		static bool		isBrace(const string & token);
+		static bool		isBraceLeft(char chToken);
+		static bool		isBraceRight(char chtoken);
+		static bool		isBrace(char chtoken);
+		static bool		isConstantPi(const string & token);
+		static bool		isConstantC(const string & token);
+		static bool		isConstant(const string & token);
+		static bool		isFunctionSine(const string & token);
+		static bool		isFunctionCosine(const string & token);
+		static bool		isFunctionTangent(const string & token);
+		static bool		isFunctionArcSine(const string & token);
+		static bool		isFunctionArcCosine(const string & token);
+		static bool		isFunctionArcTangent(const string & token);
+		static bool		isFunctionSquareRoot(const string & token);
+		static bool		isFunctionLogarithm(const string & token);
+		static bool		isFunctionNaturalLog(const string & token);
+		static bool		isFunctionFactorial(const string & token);
+		static bool		isFunctionMemory(const string & token);
+		static bool		isFunction(const string & token);
 };
 
 class Operand : public Token
 {
+	private:
+		cl_N			_value;
+
 	protected:
-		double			value;
-	
+		void 			setValue(cl_F x);
+		void 			setValue(cl_I i);
+		void 			setValue(cl_N n);
+
 	public:
-		Operand(char *pszToken);
-		Operand(double x);
-		Operand(char * pszToken, const char * pszClassName);
-		
+		Operand(Operand & src);
+		Operand(const string & token);
+		Operand(cl_F x);
+		Operand(cl_I i);
+		Operand(cl_N n);
+		Operand(const string & token, const string & className);
+
 		virtual 		~Operand() {}
-		
-		double			getValue();
-		
+
+		Operand &		operator+(Operand & rhs);
+		Operand	&		operator-(Operand & rhs);
+		Operand	&		operator*(Operand & rhs);
+		Operand	&		operator/(Operand & rhs);
+		Operand	&		operator%(Operand & rhs);
+
+		Operand	&		operator&(Operand & rhs);
+		Operand	&		operator|(Operand & rhs);
+		Operand	&		operator^(Operand & rhs);
+
+		cl_F			getDoubleValue();
+		cl_I			getIntValue();
+
 		virtual bool	isOperand() {
 							return true;
 						}
@@ -94,22 +127,22 @@ class Operator : public Token
 		int				precedence;
 		Associativity	assoc;
 		Op				op;
-	
+
 	protected:
 		void			setPrecedence(int precedence);
-		
+
 	public:
-		Operator(char *pszToken);
-		Operator(char *pszToken, const char *pszClassName);
-		
+		Operator(const string & token);
+		Operator(const string & token, const string & className);
+
 		virtual			~Operator() {}
-		
+
 		int				getPrecedence();
 		Associativity	getAssociativity();
 		Op				getOp();
-		
-		Operand *		evaluate(Operand * o1, Operand * o2);
-						
+
+		Operand *		evaluate(Operand & o1, Operand & o2);
+
 		virtual bool	isOperator() {
 							return true;
 						}
@@ -119,12 +152,12 @@ class Brace : public Token
 {
 	private:
 		BraceType		type;
-	
+
 	public:
-		Brace(char *pszToken);
-		
+		Brace(const string & token);
+
 		BraceType		getType();
-		
+
 		virtual bool	isBrace() {
 							return true;
 						}
@@ -134,14 +167,14 @@ class Constant : public Operand
 {
 	private:
 		Const			constant;
-		
-		double			_pi();
-		
+
+		cl_F			_pi();
+
 	public:
-		Constant(char *pszToken);
-		
+		Constant(const string & token);
+
 		Const			getConstant();
-		
+
 		virtual bool	isConstant() {
 							return true;
 						}
@@ -152,19 +185,19 @@ class Function : public Operator
 	private:
 		Func			function;
 		int				numArguments;
-		bigint			_factorial(unsigned long arg);
-		
+		cl_I			_factorial(cl_I arg);
+
 	public:
-		Function(char *pszToken);
-		
-		Operand *		evaluate(Operand * arg1);
-		
-		static void		memoryStore(int memoryNum, double value);
-		
+		Function(const string & token);
+
+		Operand *		evaluate(Operand & arg1);
+
+		static void		memoryStore(int memoryNum, cl_F value);
+
 		int				getNumArguments() {
 							return numArguments;
 						}
-		
+
 		virtual bool	isFunction() {
 							return true;
 						}
@@ -174,7 +207,7 @@ class Function : public Operator
 class TokenFactory
 {
 	public:
-		static Token * createToken(char *pszToken);
+		static Token * createToken(const string & token);
 };
 
 
@@ -184,18 +217,17 @@ class CalcTokenizer
 		int				startIndex;
 		int				endIndex;
 		size_t			expressionLen;
-		size_t			maxLen;
-		char *			pszExpression;
-		const char *	szWhiteSpace = " \t\n\r";
-		const char *	szTokens = " \t\n\r+-*/^()[]{}";
-		
+		string			_expression;
+		const string	whiteSpace = " \t\n\r";
+		const string	tokens = " \t\n\r+-*/^%&|~()[]{}";
+
 		bool			_isToken(char ch);
 		bool			_isWhiteSpace(char ch);
 		int				_findNextTokenPos();
-		
+
 	public:
-		CalcTokenizer(char *pszExpression, size_t bufferLength);
-		
+		CalcTokenizer(const string & expression);
+
 		bool			hasMoreTokens();
 		Token *			nextToken();
 };

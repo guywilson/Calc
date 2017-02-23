@@ -8,7 +8,7 @@
 Array::Array(size_t initialDepth)
 {
 	array = (void **)malloc((sizeof(void *)) * initialDepth);
-	
+
 	if (array == NULL) {
 		throw new Exception(
 					ERR_MALLOC,
@@ -18,10 +18,10 @@ Array::Array(size_t initialDepth)
 					"Array()",
 					__LINE__);
 	}
-	
+
 	depth = initialDepth;
 	itemCount = 0;
-	
+
 	initialise();
 }
 
@@ -31,6 +31,14 @@ Array::Array() : Array(DEFAULT_DEPTH)
 
 Array::~Array()
 {
+	int		i;
+	void *	p;
+
+	for (i = 0;i < getItemCount();i++) {
+		p = getItemAt(i);
+		free(p);
+	}
+
 	free(array);
 }
 
@@ -42,7 +50,7 @@ void Array::initialise()
 void Array::initialise(void ** p, size_t s)
 {
 	int		i;
-	
+
 	for (i = 0;i < (int)s;i++) {
 		p[i] = NULL;
 	}
@@ -53,19 +61,19 @@ void Array::grow(size_t amount)
 	void **		newArray;
 	size_t		newDepth;
 	int			i;
-	
+
 	newDepth = depth + amount;
-	
+
 	newArray = (void **)malloc(sizeof(void *) * newDepth);
-	
+
 	initialise(newArray, newDepth);
-	
+
 	for (i = 0;i < (int)depth;i++) {
 		newArray[i] = array[i];
 	}
-	
+
 	free(array);
-	
+
 	array = newArray;
 	depth = newDepth;
 }
@@ -78,7 +86,7 @@ size_t Array::getItemCount()
 void * Array::getItemAt(int index)
 {
 	void * p;
-	
+
 	if (index > (int)depth) {
 		throw new Exception(
 					ERR_INDEX_OUT_OF_RANGE,
@@ -88,9 +96,9 @@ void * Array::getItemAt(int index)
 					"getItemAt()",
 					__LINE__);
 	}
-	
+
 	p = array[index];
-	
+
 	return p;
 }
 
@@ -105,7 +113,7 @@ void Array::setItemAt(void * p, int index)
 					"setItemAt()",
 					__LINE__);
 	}
-	
+
 	array[index] = p;
 }
 
@@ -113,30 +121,30 @@ void Array::setItemAt(void * p, int index)
 void * Stack::pop()
 {
 	void * p;
-	
+
 	if (getItemCount() > 0) {
 		p = getItemAt((int)getItemCount() - 1);
-		
+
 		decrementCount();
 	}
 	else {
 		p = NULL;
 	}
-	
+
 	return p;
 }
 
 void * Stack::peek(int index)
 {
 	void * p;
-	
+
 	if (getItemCount() > 0) {
 		p = getItemAt(index);
 	}
 	else {
 		p = NULL;
 	}
-	
+
 	return p;
 }
 
@@ -146,9 +154,9 @@ void Stack::push(void * p)
 		if (getItemCount() == getCurrentDepth()) {
 			grow(DEFAULT_DEPTH);
 		}
-		
+
 		setItemAt(p, (int)getItemCount());
-		
+
 		incrementCount();
 	}
 }
@@ -169,16 +177,16 @@ Queue::Queue(size_t initialDepth) : Array(initialDepth)
 void * Queue::getItem()
 {
 	void * p;
-	
+
 	if (getItemCount() > 0) {
 		p = getItemAt(headIndex++);
-		
+
 		decrementCount();
 	}
 	else {
 		p = NULL;
 	}
-	
+
 	return p;
 }
 
@@ -188,7 +196,7 @@ void Queue::addItem(void * p)
 		if (getItemCount() == getCurrentDepth()) {
 			grow(DEFAULT_DEPTH);
 		}
-		
+
 		setItemAt(p, tailIndex++);
 
 		if (tailIndex == (int)getCurrentDepth()) {
@@ -205,7 +213,7 @@ void Queue::addItem(void * p)
 							__LINE__);
 			}
 		}
-		
+
 		incrementCount();
 	}
 }

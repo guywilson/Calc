@@ -10,194 +10,239 @@
 #include "debug.h"
 
 using namespace std;
+using namespace cln;
 
-static double _memory[10] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+static cl_F _memory[10] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
 
-Token::Token(char * pszToken)
+Token::Token(const string & token)
 {
-	strcpy_s(this->_szToken, TOKEN_LENGTH, pszToken);
+	this->_token = token;
 }
 
-Token::Token(char * pszToken, const char * pszClassName) : Token(pszToken)
+Token::Token(const string & token, const string & className) : Token(token)
 {
 	DebugHelper * dbg = DebugHelper::getInstance();
-	
+
 	if (dbg->getDebugState()) {
-		cout << "Creating Token of type " << pszClassName << " with token '" << pszToken << "'" << endl;
+		cout << "Creating Token of type " << className << " with token '" << token << "'" << endl;
 	}
-	
-	setClass(pszClassName);
+
+	setClass(className);
 }
 
-void Token::setClass(const char * pszClassName)
+void Token::setClass(const string & className)
 {
-	strcpy_s(this->_szClassName, CLASSNAME_LENGTH, pszClassName);
+	this->_className = className;
 }
 
-char * Token::getToken()
+string & Token::getToken()
 {
-	return this->_szToken;
+	return this->_token;
 }
 
-char * Token::getClass()
+string & Token::getClass()
 {
-	return this->_szClassName;
+	return this->_className;
 }
 
-bool Token::isOperand(char * pszToken) {
+bool Token::isOperand(const string & token) {
 	int		i;
 	bool	ret = true;
-	size_t	tokenLength = strlen(pszToken);
-	
-	if (pszToken[0] == '-' && tokenLength == 1) {
+	size_t	tokenLength = token.length();
+
+	if (token[0] == '-' && tokenLength == 1) {
 		// Must be the '-' operator...
 		ret = false;
 	}
 	else {
 		for (i = 0;i < (int)tokenLength;i++) {
-			if (!isdigit(pszToken[i]) && pszToken[i] != '.' && pszToken[i] != '-') {
+			if (!isdigit(token[i]) && token[i] != '.' && token[i] != '-') {
 				ret = false;
 				break;
 			}
 		}
 	}
-	
+
 	return ret;
 }
-bool Token::isOperatorPlus(char * pszToken) {
-	return pszToken[0] == '+';
+bool Token::isOperatorPlus(const string & token) {
+	return token[0] == '+';
 }
-bool Token::isOperatorMinus(char * pszToken) {
+bool Token::isOperatorMinus(const string & token) {
 	bool	ret = true;
-	size_t	tokenLength = strlen(pszToken);
-	
-	if (pszToken[0] == '-') {
-		if (tokenLength > 1 && isdigit(pszToken[1])) {
+	size_t	tokenLength = token.length();
+
+	if (token[0] == '-') {
+		if (tokenLength > 1 && isdigit(token[1])) {
 			ret = false;
 		}
 	}
 	else {
 		ret = false;
 	}
-	
+
 	return ret;
 }
-bool Token::isOperatorMultiply(char * pszToken) {
-	return pszToken[0] == '*';
+bool Token::isOperatorMultiply(const string & token) {
+	return token[0] == '*';
 }
-bool Token::isOperatorDivide(char * pszToken) {
-	return pszToken[0] == '/';
+bool Token::isOperatorDivide(const string & token) {
+	return token[0] == '/';
 }
-bool Token::isOperatorPower(char * pszToken) {
-	return pszToken[0] == '^';
+bool Token::isOperatorPower(const string & token) {
+	return token[0] == '^';
 }
-bool Token::isOperator(char * pszToken) {
+bool Token::isOperatorMod(const string & token) {
+	return token[0] == '%';
+}
+bool Token::isOperatorAND(const string & token) {
+	return token[0] == '&';
+}
+bool Token::isOperatorOR(const string & token) {
+	return token[0] == '|';
+}
+bool Token::isOperatorXOR(const string & token) {
+	return token[0] == '~';
+}
+bool Token::isOperator(const string & token) {
 	return (
-		isOperatorPlus(pszToken) ||
-		isOperatorMinus(pszToken) || 
-		isOperatorMultiply(pszToken) || 
-		isOperatorDivide(pszToken) || 
-		isOperatorPower(pszToken));
+		isOperatorPlus(token) ||
+		isOperatorMinus(token) ||
+		isOperatorMultiply(token) ||
+		isOperatorDivide(token) ||
+		isOperatorPower(token)) ||
+		isOperatorMod(token) ||
+		isOperatorAND(token) ||
+		isOperatorOR(token) ||
+		isOperatorXOR(token);
 }
-bool Token::isBraceLeft(char * pszToken) {
-	return (pszToken[0] == '(' || pszToken[0] == '[' || pszToken[0] == '{');
+bool Token::isBraceLeft(const string & token) {
+	return (token[0] == '(' || token[0] == '[' || token[0] == '{');
 }
-bool Token::isBraceRight(char * pszToken) {
-	return (pszToken[0] == ')' || pszToken[0] == ']' || pszToken[0] == '}');
+bool Token::isBraceRight(const string & token) {
+	return (token[0] == ')' || token[0] == ']' || token[0] == '}');
 }
-bool Token::isBrace(char * pszToken) {
-	return (isBraceLeft(pszToken) || isBraceRight(pszToken));
+bool Token::isBrace(const string & token) {
+	return (isBraceLeft(token) || isBraceRight(token));
 }
-bool Token::isConstantPi(char * pszToken) {
-	return !strncmp(pszToken, "pi", 2);
+bool Token::isBraceLeft(char chToken) {
+	return (chToken == '(' || chToken == '[' || chToken == '{');
 }
-bool Token::isConstantC(char * pszToken) {
-	return !strncmp(pszToken, "c", 1);
+bool Token::isBraceRight(char chToken) {
+	return (chToken == ')' || chToken == ']' || chToken == '}');
 }
-bool Token::isConstant(char * pszToken)
-{
-	return (isConstantPi(pszToken) || isConstantC(pszToken));
+bool Token::isBrace(char chToken) {
+	return (isBraceLeft(chToken) || isBraceRight(chToken));
 }
-bool Token::isFunctionSine(char * pszToken) {
-	return !strncmp(pszToken, "sin", 3);
+bool Token::isConstantPi(const string & token) {
+	return !token.compare(0, 2, "pi");
 }
-bool Token::isFunctionCosine(char * pszToken) {
-	return !strncmp(pszToken, "cos", 3);
+bool Token::isConstantC(const string & token) {
+	return token[0] == 'c';
 }
-bool Token::isFunctionTangent(char * pszToken) {
-	return !strncmp(pszToken, "tan", 3);
+bool Token::isConstant(const string & token) {
+	return (isConstantPi(token) || isConstantC(token));
 }
-bool Token::isFunctionArcSine(char * pszToken) {
-	return !strncmp(pszToken, "asin", 4);
+bool Token::isFunctionSine(const string & token) {
+	return !token.compare(0, 3, "sin");
 }
-bool Token::isFunctionArcCosine(char * pszToken) {
-	return !strncmp(pszToken, "acos", 4);
+bool Token::isFunctionCosine(const string & token) {
+	return !token.compare(0, 3, "cos");
 }
-bool Token::isFunctionArcTangent(char * pszToken) {
-	return !strncmp(pszToken, "atan", 4);
+bool Token::isFunctionTangent(const string & token) {
+	return !token.compare(0, 3, "tan");
 }
-bool Token::isFunctionSquareRoot(char * pszToken) {
-	return !strncmp(pszToken, "sqrt", 4);
+bool Token::isFunctionArcSine(const string & token) {
+	return !token.compare(0, 4, "asin");
 }
-bool Token::isFunctionLogarithm(char * pszToken) {
-	return !strncmp(pszToken, "log", 3);
+bool Token::isFunctionArcCosine(const string & token) {
+	return !token.compare(0, 4, "acos");
 }
-bool Token::isFunctionLogarithm10(char * pszToken) {
-	return !strncmp(pszToken, "log10", 5);
+bool Token::isFunctionArcTangent(const string & token) {
+	return !token.compare(0, 4, "atan");
 }
-bool Token::isFunctionFactorial(char * pszToken) {
-	return !strncmp(pszToken, "fact", 4);
+bool Token::isFunctionSquareRoot(const string & token) {
+	return !token.compare(0, 4, "sqrt");
 }
-bool Token::isFunctionMemory(char * pszToken) {
-	return !strncmp(pszToken, "mem", 3);
+bool Token::isFunctionLogarithm(const string & token) {
+	return !token.compare(0, 3, "log");
 }
-bool Token::isFunction(char * pszToken) {
+bool Token::isFunctionNaturalLog(const string & token) {
+	return !token.compare(0, 2, "ln");
+}
+bool Token::isFunctionFactorial(const string & token) {
+	return !token.compare(0, 4, "fact");
+}
+bool Token::isFunctionMemory(const string & token) {
+	return !token.compare(0, 3, "mem");
+}
+bool Token::isFunction(const string & token) {
 	return (
-		isFunctionSine(pszToken) || 
-		isFunctionCosine(pszToken) || 
-		isFunctionTangent(pszToken) || 
-		isFunctionArcSine(pszToken) || 
-		isFunctionArcCosine(pszToken) || 
-		isFunctionArcTangent(pszToken) || 
-		isFunctionSquareRoot(pszToken) || 
-		isFunctionLogarithm(pszToken) ||
-		isFunctionLogarithm10(pszToken) ||
-		isFunctionFactorial(pszToken) ||
-		isFunctionMemory(pszToken));
+		isFunctionSine(token) ||
+		isFunctionCosine(token) ||
+		isFunctionTangent(token) ||
+		isFunctionArcSine(token) ||
+		isFunctionArcCosine(token) ||
+		isFunctionArcTangent(token) ||
+		isFunctionSquareRoot(token) ||
+		isFunctionLogarithm(token) ||
+		isFunctionNaturalLog(token) ||
+		isFunctionFactorial(token) ||
+		isFunctionMemory(token));
 }
 
 
-Operator::Operator(char * pszToken) : Token(pszToken, "Operator")
+Operator::Operator(const string & token) : Token(token, "Operator")
 {
-	if (Token::isOperatorPlus(pszToken)) {
+	if (Token::isOperatorPlus(token)) {
 		op = Plus;
 		precedence = 2;
 		assoc = Left;
 	}
-	else if (Token::isOperatorMinus(pszToken)) {
+	else if (Token::isOperatorMinus(token)) {
 		op = Minus;
 		precedence = 2;
 		assoc = Left;
 	}
-	else if (Token::isOperatorMultiply(pszToken)) {
+	else if (Token::isOperatorMultiply(token)) {
 		op = Multiply;
 		precedence = 3;
 		assoc = Left;
 	}
-	else if (Token::isOperatorDivide(pszToken)) {
+	else if (Token::isOperatorDivide(token)) {
 		op = Divide;
 		precedence = 3;
 		assoc = Left;
 	}
-	else if (Token::isOperatorPower(pszToken)) {
+	else if (Token::isOperatorPower(token)) {
 		op = Power;
 		precedence = 4;
 		assoc = Right;
 	}
+	else if (Token::isOperatorMod(token)) {
+		op = Mod;
+		precedence = 3;
+		assoc = Left;
+	}
+	else if (Token::isOperatorAND(token)) {
+		op = And;
+		precedence = 4;
+		assoc = Left;
+	}
+	else if (Token::isOperatorOR(token)) {
+		op = Or;
+		precedence = 4;
+		assoc = Left;
+	}
+	else if (Token::isOperatorXOR(token)) {
+		op = Xor;
+		precedence = 4;
+		assoc = Left;
+	}
 }
 
-Operator::Operator(char *pszToken, const char *pszClassName) : Token(pszToken, pszClassName)
+Operator::Operator(const string & token, const string & className) : Token(token, className)
 {
 }
 
@@ -221,43 +266,59 @@ Op Operator::getOp()
 	return this->op;
 }
 
-Operand * Operator::evaluate(Operand * o1, Operand * o2)
+Operand * Operator::evaluate(Operand & o1, Operand & o2)
 {
 	Operand * result;
-	
+
 	switch (getOp()) {
 
 		case Plus:
-			result = new Operand(o1->getValue() + o2->getValue());
+			result = new Operand(o1 + o2);
 			break;
 
 		case Minus:
-			result = new Operand(o1->getValue() - o2->getValue());
+			result = new Operand(o1 - o2);
 			break;
 
 		case Multiply:
-			result = new Operand(o1->getValue() * o2->getValue());
+			result = new Operand(o1 * o2);
 			break;
 
 		case Divide:
-			result = new Operand(o1->getValue() / o2->getValue());
+			result = new Operand(o1 / o2);
 			break;
 
 		case Power:
-			result = new Operand(pow(o1->getValue(), o2->getValue()));
+			result = new Operand(cl_float(pow(double_approx(o1.getDoubleValue()), double_approx(o2.getDoubleValue()))));
+			break;
+
+		case Mod:
+			result = new Operand(o1 % o2);
+			break;
+
+		case And:
+			result = new Operand(o1 & o2);
+			break;
+
+		case Or:
+			result = new Operand(o1 | o2);
+			break;
+
+		case Xor:
+			result = new Operand(o1 ^ o2);
 			break;
 	}
-	
+
 	return result;
 }
 
 
-Brace::Brace(char * pszToken) : Token(pszToken, "Brace")
+Brace::Brace(const string & token) : Token(token, "Brace")
 {
-	if (Token::isBraceLeft(pszToken)) {
+	if (Token::isBraceLeft(token)) {
 		type = Open;
 	}
-	else if (Token::isBraceRight(pszToken)) {
+	else if (Token::isBraceRight(token)) {
 		type = Close;
 	}
 }
@@ -268,79 +329,144 @@ BraceType Brace::getType()
 }
 
 
-Operand::Operand(char * pszToken) : Token(pszToken, "Operand")
+Operand::Operand(Operand & src)
 {
-	this->value = atof(pszToken);
+	_value = src.getDoubleValue();
 }
 
-Operand::Operand(double x)
+Operand::Operand(const string & token) : Token(token, "Operand")
 {
-	this->value = x;
+	int		tokenLen;
+	int		i = 0;
+	bool	isFloat = false;
+	char	szPrecision[8];
+	string 	operand;
+
+	tokenLen = token.length();
+
+	operand = token;
+
+	while (i < tokenLen) {
+		if (token[i] == '.') {
+			isFloat = true;
+			break;
+		}
+
+		i++;
+	}
+
+	if (!isFloat) {
+		operand += ".0";
+	}
+
+	sprintf(szPrecision, "_%d", FLOAT_PRECISION);
+	operand += szPrecision;
+
+	cl_F op = operand.c_str();
+
+	_value = op;
 }
 
-Operand::Operand(char * pszToken, const char * pszClassName) : Token(pszToken, pszClassName)
+Operand::Operand(cl_F x)
+{
+	_value = x;
+}
+
+Operand::Operand(cl_N n)
+{
+	_value = n;
+}
+
+Operand::Operand(cl_I i)
+{
+	_value = cl_float(i, float_format(FLOAT_PRECISION));
+}
+
+Operand::Operand(const string & token, const string & className) : Token(token, className)
 {
 }
 
-double Operand::getValue()
+Operand & Operand::operator+(Operand & rhs)
 {
-	return this->value;
+	setValue(getDoubleValue() + rhs.getDoubleValue());
+	return *this;
+}
+Operand	& Operand::operator-(Operand & rhs)
+{
+	setValue(getDoubleValue() - rhs.getDoubleValue());
+	return *this;
+}
+Operand	& Operand::operator*(Operand & rhs)
+{
+	setValue(getDoubleValue() * rhs.getDoubleValue());
+	return *this;
+}
+Operand	& Operand::operator/(Operand & rhs)
+{
+	setValue(getDoubleValue() / rhs.getDoubleValue());
+	return *this;
+}
+Operand	& Operand::operator%(Operand & rhs)
+{
+	setValue(mod(getIntValue(), rhs.getIntValue()));
+	return *this;
+}
+Operand	& Operand::operator&(Operand & rhs)
+{
+	setValue(getIntValue() & rhs.getIntValue());
+	return *this;
+}
+Operand	& Operand::operator|(Operand & rhs)
+{
+	setValue(getIntValue() | rhs.getIntValue());
+	return *this;
+}
+Operand	& Operand::operator^(Operand & rhs)
+{
+	setValue(getIntValue() ^ rhs.getIntValue());
+	return *this;
+}
+
+cl_F Operand::getDoubleValue()
+{
+	return cl_float(realpart(this->_value));
+}
+
+cl_I Operand::getIntValue()
+{
+	cl_I		intValue;
+
+	intValue = floor1(realpart(this->_value));
+
+	return intValue;
+}
+
+void Operand::setValue(cl_F x)
+{
+	this->_value = x;
+}
+
+void Operand::setValue(cl_N n)
+{
+	this->_value = n;
+}
+
+void Operand::setValue(cl_I i)
+{
+	_value = cl_float(i, float_format(FLOAT_PRECISION));
 }
 
 
-Constant::Constant(char * pszToken) : Operand(pszToken, "Constant")
+Constant::Constant(const string & token) : Operand(token, "Constant")
 {
-	if (Token::isConstantPi(pszToken)) {
+	if (Token::isConstantPi(token)) {
 		constant = Pi;
-		value = _pi();
+		setValue(pi(float_format(FLOAT_PRECISION)));
 	}
-	else if (Token::isConstantC(pszToken)) {
+	else if (Token::isConstantC(token)) {
 		constant = C;
-		value = 299792458.0; // in m/s
+		setValue(cl_float(299792458.0, float_format(FLOAT_PRECISION))); // in m/s
 	}
-}
-
-/******************************************************************************
-*
-* Calculate Pi using Nilakantha's infinite series:
-*
-* Pi = 3 + 4/(2 * 3 * 4) - 4/(4 * 5 * 6) + 4/(6 * 7 * 8) - 4/(8 * 9 * 10)...
-*
-******************************************************************************/
-double Constant::_pi()
-{
-	double			pi;
-	double			numerator;
-	bigint			d1;
-	bigint			d2;
-	bigint			d3;
-	bigint			d4;
-	bigint			d5;
-	bigint			i;
-	
-	pi = 3.0;
-	numerator = 4.0;
-	d1 = 2L;
-	d2 = 3L;
-	d3 = 4L;
-	d4 = 5L;
-	d5 = 6L;
-	i = 0;
-	
-	/*
-	** Calculate pi using 4 million terms of the series...
-	*/
-	for (i = 0;i < 1000000;i++) {
-		pi = pi + (numerator / ((double)(d1 * d2 * d3))) - (numerator / ((double)(d3 * d4 * d5)));
-
-		d1 += 4L;
-		d2 += 4L;
-		d3 += 4L;
-		d4 += 4L;
-		d5 += 4L;
-	}
-	
-	return pi;
 }
 
 Const Constant::getConstant()
@@ -349,155 +475,155 @@ Const Constant::getConstant()
 }
 
 
-Function::Function(char * pszToken) : Operator(pszToken, "Function")
+Function::Function(const string & token) : Operator(token, "Function")
 {
-	if (Token::isFunctionSine(pszToken)) {
+	if (Token::isFunctionSine(token)) {
 		function = Sine;
 		numArguments = 1;
 	}
-	else if (Token::isFunctionCosine(pszToken)) {
+	else if (Token::isFunctionCosine(token)) {
 		function = Cosine;
 		numArguments = 1;
 	}
-	else if (Token::isFunctionTangent(pszToken)) {
+	else if (Token::isFunctionTangent(token)) {
 		function = Tangent;
 		numArguments = 1;
 	}
-	else if (Token::isFunctionArcSine(pszToken)) {
+	else if (Token::isFunctionArcSine(token)) {
 		function = ArcSine;
 		numArguments = 1;
 	}
-	else if (Token::isFunctionArcCosine(pszToken)) {
+	else if (Token::isFunctionArcCosine(token)) {
 		function = ArcCosine;
 		numArguments = 1;
 	}
-	else if (Token::isFunctionArcTangent(pszToken)) {
+	else if (Token::isFunctionArcTangent(token)) {
 		function = ArcTangent;
 		numArguments = 1;
 	}
-	else if (Token::isFunctionSquareRoot(pszToken)) {
+	else if (Token::isFunctionSquareRoot(token)) {
 		function = SquareRoot;
 		numArguments = 1;
 	}
-	else if (Token::isFunctionLogarithm(pszToken)) {
+	else if (Token::isFunctionLogarithm(token)) {
 		function = Logarithm;
 		numArguments = 1;
 	}
-	else if (Token::isFunctionLogarithm10(pszToken)) {
-		function = Logarithm10;
+	else if (Token::isFunctionNaturalLog(token)) {
+		function = NaturalLog;
 		numArguments = 1;
 	}
-	else if (Token::isFunctionFactorial(pszToken)) {
+	else if (Token::isFunctionFactorial(token)) {
 		function = Factorial;
 		numArguments = 1;
 	}
-	else if (Token::isFunctionMemory(pszToken)) {
+	else if (Token::isFunctionMemory(token)) {
 		function = Memory;
 		numArguments = 1;
 	}
-	
+
 	setPrecedence(5);
 }
 
-Operand * Function::evaluate(Operand * arg1)
+Operand * Function::evaluate(Operand & arg1)
 {
 	Operand *		result;
-	double			degreesToRadians = (3.14159265358979323846 / 180.0);
-	double			radiansToDegrees = (180.0 / 3.14159265358979323846);
+	cl_F			degreesToRadians = (pi(float_format(FLOAT_PRECISION)) / cl_float(180, float_format(FLOAT_PRECISION)));
+	cl_F			radiansToDegrees = (cl_float(180, float_format(FLOAT_PRECISION)) / pi(float_format(FLOAT_PRECISION)));
 
 	switch (this->function) {
-		
+
 		case Sine:
-			result = new Operand(sin(arg1->getValue() * degreesToRadians));
+			result = new Operand(sin(arg1.getDoubleValue() * degreesToRadians));
 			break;
-		
+
 		case Cosine:
-			result = new Operand(cos(arg1->getValue() * degreesToRadians));
+			result = new Operand(cos(arg1.getDoubleValue() * degreesToRadians));
 			break;
-		
+
 		case Tangent:
-			result = new Operand(tan(arg1->getValue() * degreesToRadians));
+			result = new Operand(tan(arg1.getDoubleValue() * degreesToRadians));
 			break;
-		
+
 		case ArcSine:
-			result = new Operand(asin(arg1->getValue()) * radiansToDegrees);
+			result = new Operand(asin(arg1.getDoubleValue()) * radiansToDegrees);
 			break;
-		
+
 		case ArcCosine:
-			result = new Operand(acos(arg1->getValue()) * radiansToDegrees);
+			result = new Operand(acos(arg1.getDoubleValue()) * radiansToDegrees);
 			break;
-		
+
 		case ArcTangent:
-			result = new Operand(atan(arg1->getValue()) * radiansToDegrees);
+			result = new Operand(atan(arg1.getDoubleValue()) * radiansToDegrees);
 			break;
-		
+
 		case SquareRoot:
-			result = new Operand(sqrt(arg1->getValue()));
+			result = new Operand(sqrt(arg1.getDoubleValue()));
 			break;
-		
+
 		case Logarithm:
-			result = new Operand(log(arg1->getValue()));
+			result = new Operand(log(arg1.getDoubleValue()));
 			break;
-		
-		case Logarithm10:
-			result = new Operand(log10(arg1->getValue()));
+
+		case NaturalLog:
+			result = new Operand(ln(arg1.getDoubleValue()));
 			break;
-		
+
 		case Factorial:
-			result = new Operand((double)_factorial((long)arg1->getValue()));
+			result = new Operand(_factorial(arg1.getIntValue()));
 			break;
-		
+
 		case Memory:
-			result = new Operand(_memory[(int)arg1->getValue()]);
+			result = new Operand(_memory[cl_I_to_int(arg1.getIntValue())]);
 			break;
-		
+
 		default:
 			break;
 	}
-	
+
 	return result;
 }
 
-bigint Function::_factorial(unsigned long arg)
+cl_I Function::_factorial(cl_I arg)
 {
-	unsigned long	index;
-	bigint			result;
-	
+	cl_I			index;
+	cl_I			result;
+
 	result = arg;
-	
+
 	if (arg > 1) {
 		for (index = arg - 1;index > 0;index--) {
 			result *= index;
 		}
 	}
-	
+
 	return result;
 }
 
-void Function::memoryStore(int memoryNum, double value)
+void Function::memoryStore(int memoryNum, cl_F value)
 {
 	_memory[memoryNum] = value;
 }
 
 
-Token * TokenFactory::createToken(char * pszToken)
+Token * TokenFactory::createToken(const string & token)
 {
 	Token * t;
-	
-	if (Token::isOperand(pszToken)) {
-		t = new Operand(pszToken);
+
+	if (Token::isOperand(token)) {
+		t = new Operand(token);
 	}
-	else if (Token::isOperator(pszToken)) {
-		t = new Operator(pszToken);
+	else if (Token::isOperator(token)) {
+		t = new Operator(token);
 	}
-	else if (Token::isBrace(pszToken)) {
-		t = new Brace(pszToken);
+	else if (Token::isBrace(token)) {
+		t = new Brace(token);
 	}
-	else if (Token::isConstant(pszToken)) {
-		t = new Constant(pszToken);
+	else if (Token::isConstant(token)) {
+		t = new Constant(token);
 	}
-	else if (Token::isFunction(pszToken)) {
-		t = new Function(pszToken);
+	else if (Token::isFunction(token)) {
+		t = new Function(token);
 	}
 	else {
 		throw new Exception(
@@ -508,38 +634,27 @@ Token * TokenFactory::createToken(char * pszToken)
 					"createToken()",
 					__LINE__);
 	}
-	
+
 	return t;
 }
 
 
-CalcTokenizer::CalcTokenizer(char * pszExpression, size_t bufferLength)
+CalcTokenizer::CalcTokenizer(const string & expression)
 {
-	this->pszExpression = pszExpression;
+	this->_expression = expression;
 	startIndex = 0;
 	endIndex = 0;
-	expressionLen = strlen(pszExpression);
-	maxLen = bufferLength;
-	
-	if (expressionLen > maxLen) {
-		throw new Exception(
-					ERR_ARRAY_OVERFLOW,
-					"String length exceeds maximum buffer length",
-					__FILE__,
-					"CalcTokenizer",
-					"CalcTokenizer()",
-					__LINE__);
-	}
+	expressionLen = expression.length();
 }
 
 bool CalcTokenizer::_isToken(char ch)
 {
-	return (strchr(szTokens, ch) != NULL);
+	return (tokens.find(ch) != string::npos);
 }
 
 bool CalcTokenizer::_isWhiteSpace(char ch)
 {
-	return (strchr(szWhiteSpace, ch) != NULL);
+	return (whiteSpace.find(ch) != string::npos);
 }
 
 int CalcTokenizer::_findNextTokenPos()
@@ -548,10 +663,10 @@ int CalcTokenizer::_findNextTokenPos()
 	char	ch;
 	bool	lookingForWhiteSpace = true;
 	int		tokenLen = 0;
-	
-	for (i = startIndex;i < (int)expressionLen && i < (int)maxLen;i++) {
-		ch = pszExpression[i];
-		
+
+	for (i = startIndex;i < (int)expressionLen;i++) {
+		ch = _expression[i];
+
 		if (lookingForWhiteSpace) {
 			if (_isWhiteSpace(ch)) {
 				startIndex++;
@@ -561,7 +676,7 @@ int CalcTokenizer::_findNextTokenPos()
 				lookingForWhiteSpace = false;
 			}
 		}
-		
+
 		if (_isWhiteSpace(ch)) {
 			return i;
 		}
@@ -576,16 +691,16 @@ int CalcTokenizer::_findNextTokenPos()
 			else {
 				/*
 				** If this is the '-' character and if the next char is a digit (0-9)
-				** and the previous char is not a ')' or a digit then this must be a -ve number, 
+				** and the previous char is not a ')' or a digit then this must be a -ve number,
 				** not the '-' operator...
 				*/
-				if (ch == '-' && isdigit(pszExpression[i + 1])) {
+				if (ch == '-' && isdigit(_expression[i + 1])) {
 					bool isNegativeOperand = false;
-					
+
 					if (i > 1) {
-						bool isPreviousCharBrace = Token::isBraceRight(&pszExpression[i - 1]);
-						bool isPreviousCharDigit = isdigit(pszExpression[i - 1]) != 0 ? true : false;
-						
+						bool isPreviousCharBrace = Token::isBraceRight(_expression[i - 1]);
+						bool isPreviousCharDigit = isdigit(_expression[i - 1]) != 0 ? true : false;
+
 						if (!isPreviousCharBrace && !isPreviousCharDigit) {
 							isNegativeOperand = true;
 						}
@@ -606,56 +721,51 @@ int CalcTokenizer::_findNextTokenPos()
 					else {
 						return i + 1;
 					}
-				} 
+				}
 				else {
 					// The token is the token we want to return...
 					return i + 1;
 				}
 			}
 		}
-		
+
 		tokenLen++;
-		
+
 		/*
 		** If we haven't returned yet and we're at the end of
-		** the expression, we must have an operand at the end 
+		** the expression, we must have an operand at the end
 		** of the expression...
 		*/
 		if (i == (int)(expressionLen - 1)) {
 			return i + 1;
 		}
 	}
-	
+
 	return -1;
 }
 
 bool CalcTokenizer::hasMoreTokens()
 {
 	int pos = _findNextTokenPos();
-	
+
 	if (pos > 0) {
 		endIndex = pos;
 		return true;
 	}
-	
+
 	return false;
 }
 
 Token * CalcTokenizer::nextToken()
 {
-	char		szToken[TOKEN_LENGTH];
+	string		token;
 	int			tokenLen;
-	
+
 	tokenLen = endIndex - startIndex;
 
-#ifdef _WIN32	
-	strncpy_s(szToken, TOKEN_LENGTH, &pszExpression[startIndex], tokenLen);
-#else
-	strncpy(szToken, &pszExpression[startIndex], tokenLen);
-#endif
-	szToken[tokenLen] = 0;
-	
+	token = _expression.substr(startIndex, tokenLen);
+
 	startIndex = endIndex;
-	
-	return TokenFactory::createToken(szToken);
+
+	return TokenFactory::createToken(token);
 }

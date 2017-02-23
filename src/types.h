@@ -8,7 +8,7 @@ typedef unsigned char		byte;
 typedef unsigned long long	bigint;
 typedef unsigned long		dword;
 
-typedef enum 
+typedef enum
 {
 	Left 		= 0x01,
 	Right 		= 0x02,
@@ -18,11 +18,15 @@ Associativity;
 
 typedef enum
 {
-	Plus 		= 0x10, 
-	Minus 		= 0x11, 
-	Multiply 	= 0x12, 
+	Plus 		= 0x10,
+	Minus 		= 0x11,
+	Multiply 	= 0x12,
 	Divide 		= 0x13,
-	Power 		= 0x14
+	Power 		= 0x14,
+	Mod			= 0x15,
+	And			= 0x16,
+	Or			= 0x17,
+	Xor			= 0x18
 }
 Op;
 
@@ -50,7 +54,7 @@ typedef enum
 	ArcTangent 	= 0x45,
 	SquareRoot 	= 0x46,
 	Logarithm 	= 0x47,
-	Logarithm10 = 0x48,
+	NaturalLog  = 0x48,
 	Factorial	= 0x49,
 	Memory		= 0x4A
 }

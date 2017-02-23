@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <stdio.h>
 #include <string.h>
+#include <cln/cln.h>
 
 #include "secure_func.h"
 #include "types.h"
@@ -10,6 +11,7 @@
 #include "exception.h"
 
 using namespace std;
+using namespace cln;
 
 int assertEqualTo(double actualResult, double expectedResult)
 {
@@ -31,38 +33,41 @@ int assertEqualTo(double actualResult, double expectedResult)
 	}
 }
 
-bool testCalculation(char *pszCalculation, int calcLen, double expectedResult)
+bool testCalculation(string & calculation, double expectedResult)
 {
-	double		result = 0.0;
+	cl_F		result = 0.0;
 	bool		isSuccess = true;
-	
-	cout << "\nTesting calculation:" << endl;
-	cout << "\t" << pszCalculation << endl;;
-	
-	result = Calculator::evaluate(pszCalculation, calcLen);
+	string		resultBuffer;
 
-	cout << "\tActual ["  << std::setprecision(4) << result << "] Expected [" << expectedResult << "]" << endl;
-	isSuccess = (assertEqualTo(result, expectedResult) != 0);
-	
+
+	cout << "\nTesting calculation:" << endl;
+	cout << "\t" << calculation << endl;;
+
+	result = Calculator::evaluate(calculation, &resultBuffer);
+
+	cout << "\tActual ["  << std::setprecision(4) << double_approx(result) << "] Expected [" << expectedResult << "]" << endl;
+	isSuccess = (assertEqualTo(double_approx(result), expectedResult) != 0);
+
 	return isSuccess;
 }
 
-bool testValidation(char *pszCalculation, int calcLen)
+bool testValidation(string & calculation)
 {
+	string		resultBuffer;
 	bool		isSuccess = false;
-	
+
 	cout << "\nTesting calculation:" << endl;
-	cout << "\t" << pszCalculation << endl;
-	
+	cout << "\t" << calculation << endl;
+
 	try {
-		Calculator::evaluate(pszCalculation, calcLen);
+		Calculator::evaluate(calculation, &resultBuffer);
 	}
 	catch (Exception * e) {
 		cout << "Exception caught: " << e->getExceptionString() << endl << endl;
 		cout << "SUCCESS - VALIDATION FAILURE!!" << endl;
 		isSuccess = true;
 	}
-	
+
 	return isSuccess;
 }
 
@@ -72,7 +77,7 @@ bool runTestSuite(void)
 	int				failCount = 0;
 	int				testCount = 0;
 	int				i;
-	char 			szCalculation[1024];
+	string 			calculation;
 	const TESTITEM	testCalculations[] = {
 						{"2 + (3 * 4) ^ 2 - 13", 133.00},
 						{"12 - ((2 * 3) - (8 / 2) / 0.5) / 12.653", 12.16},
@@ -90,7 +95,7 @@ bool runTestSuite(void)
 						"((((((1 + 2 * 3)-2)*4)/2)-12)+261)/12) - 5.25",
 						"84 * -15 + sin47"
 					};
-	
+
 	/**************************************************************************
 	**
 	** ADD TESTS HERE
@@ -99,8 +104,8 @@ bool runTestSuite(void)
 
 	for (i = 0;i < 9;i++) {
 		testCount++;
-		strcpy_s(szCalculation, 1024, testCalculations[i].testCalc);
-		if (testCalculation(szCalculation, 1024, testCalculations[i].expected)) {
+		calculation = testCalculations[i].testCalc;
+		if (testCalculation(calculation, testCalculations[i].expected)) {
 			passCount++;
 		}
 		else {
@@ -110,15 +115,15 @@ bool runTestSuite(void)
 
 	for (i = 0;i < 4;i++) {
 		testCount++;
-		strcpy_s(szCalculation, 1024, testValidations[i]);
-		if (testValidation(szCalculation, 1024)) {
+		calculation = testValidations[i];
+		if (testValidation(calculation)) {
 			passCount++;
 		}
 		else {
 			failCount++;
 		}
 	}
-	
+
 	/**************************************************************************
 	**
 	** END TESTS

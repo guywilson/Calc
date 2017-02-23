@@ -1,6 +1,11 @@
 #include <iostream>
+#include <algorithm>
+#include <cstring>
+#include <sstream>
+#include <string>
 #include <stdio.h>
 #include <string.h>
+#include <cln/cln.h>
 
 #include "secure_func.h"
 #include "types.h"
@@ -13,26 +18,25 @@
 #define CALC_BUFFER_LEN				1024
 
 using namespace std;
+using namespace cln;
 
-void removeNewLine(char *pszCalculation, size_t bufferLength);
 void printHelp(void);
 
 int main(int argc, char *argv[])
 {
-	char			szCalculation[CALC_BUFFER_LEN];
-	double			result = 0.0;
-	int				i;
-	bool			loop;
-	bool			hasParams = false;
-	DebugHelper *	dbg;
-	
-	szCalculation[0] = 0;
-	
+	string						calculation;
+	int							i;
+	bool						loop;
+	bool						hasParams = false;
+	cl_F						result = 0.0;
+	DebugHelper *				dbg;
+	istreambuf_iterator<char>	eos;
+
 	if (argc > 1) {
 		for (i = 1;i < argc;i++) {
-			strcat_s(szCalculation, CALC_BUFFER_LEN, argv[i]);
+			calculation += argv[i];
 		}
-	
+
 		hasParams = true;
 	}
 
@@ -44,79 +48,104 @@ int main(int argc, char *argv[])
 	}
 
 	loop = true;
-	
+
 	while (loop) {
 		if (!hasParams) {
 			cout << "calc> ";
-			cin.getline(szCalculation, CALC_BUFFER_LEN);
-			removeNewLine(szCalculation, CALC_BUFFER_LEN);
+			getline(cin, calculation);
+
+			if (dbg->getDebugState()) {
+				cout << "Calculation entered = [" << calculation << "]" << endl << endl;
+			}
 		}
 
-		if (strlen(szCalculation) == 0) {
+		if (calculation.length() == 0) {
 			continue;
 		}
-		
-		if (strncmp(szCalculation, "exit", 4) == 0) {
+
+		if (calculation.compare(0, 4, "exit") == 0) {
 			loop = false;
 		}
-		else if (strncmp(szCalculation, "test", 4) == 0) {
+		else if (calculation.compare(0, 4, "test") == 0) {
 			runTestSuite();
 		}
-		else if (strncmp(szCalculation, "dbgon", 5) == 0) {
+		else if (calculation.compare(0, 5, "dbgon") == 0) {
 			dbg->setDebugOn();
 		}
-		else if (strncmp(szCalculation, "dbgoff", 6) == 0) {
+		else if (calculation.compare(0, 6, "dbgoff") == 0) {
 			dbg->setDebugOff();
 		}
-		else if (strncmp(szCalculation, "memst", 5) == 0) {
+		else if (calculation.compare(0, 5, "memst") == 0) {
 			int memoryNum = 0;
-			
-			if (strlen(szCalculation) > 5) {
-				memoryNum = atoi(&szCalculation[5]);
+
+			if (calculation.length() > 5) {
+				memoryNum = atoi(calculation.substr(5).c_str());
 			}
-			
+
 			Calculator::store(memoryNum, result);
 		}
-		else if (strncmp(szCalculation, "help", 4) == 0 || strncmp(szCalculation, "?", 1) == 0) {
+		else if (calculation.compare(0, 3, "hex") == 0) {
+			stringstream buf;
+
+			cl_I intResult;
+			intResult = floor1(realpart(result));
+
+			fprinthexadecimal(buf, intResult);
+
+			istreambuf_iterator<char> it = buf.rdbuf();
+			string strbuf;
+
+			while (it != eos) {
+				strbuf += *it++;
+			}
+
+			cout << "0x" << strbuf << endl;
+		}
+		else if (calculation.compare(0, 3, "bin") == 0) {
+			stringstream buf;
+
+			cl_I intResult;
+			intResult = floor1(realpart(result));
+
+			fprintbinary(buf, intResult);
+
+			istreambuf_iterator<char> it = buf.rdbuf();
+			string strbuf;
+
+			while (it != eos) {
+				strbuf += *it++;
+			}
+
+			cout << strbuf << endl;
+		}
+		else if (calculation.compare(0, 4, "help") == 0 || calculation[0] == '?') {
 			printHelp();
 		}
 		else {
 			try {
-				result = Calculator::evaluate(szCalculation, CALC_BUFFER_LEN);
-				printf("%s = %.12f\n", szCalculation, result);
+				string resultBuffer;
+				result = Calculator::evaluate(calculation, &resultBuffer);
+
+				cout << calculation << " = " << resultBuffer << endl;
 			}
 			catch (Exception * e) {
 				cout << "Caught exception: " << e->getExceptionString() << endl;
 			}
 		}
-		
+
 		if (hasParams) {
 			loop = false;
 		}
 	}
-	
-	return 0;
-}
 
-void removeNewLine(char *pszCalculation, size_t bufferLength)
-{
-	int		i;
-	int		len = (int)strlen(pszCalculation);
-	char	ch;
-	
-	for (i = 0;i < len && i < (int)bufferLength;i++) {
-		ch = pszCalculation[i];
-		
-		if (ch == '\n' || ch == '\r') {
-			pszCalculation[i] = 0;
-		}
-	}
+	return 0;
 }
 
 void printHelp(void)
 {
 	cout << "\nOperators supported:" << endl;
-	cout << "\t+, -, *, /" << endl;
+	cout << "\t+, -, *, /, % (Modulo)" << endl;
+	cout << "\t& (AND), | (OR), ~ (XOR)" << endl;
 	cout << "\t^ (power, e.g. x to the power of y)" << endl << endl;
 	cout << "\tNesting is achieved with braces ()" << endl << endl;
 	cout << "Functions supported:" << endl;
@@ -128,7 +157,7 @@ void printHelp(void)
 	cout << "\tatan(x)\treturn the angle in degrees of arctangent(x)" << endl;
 	cout << "\tsqrt(x)\treturn the square root of x" << endl;
 	cout << "\tlog(x)\treturn the log of x" << endl;
-	cout << "\tlog10(x)\treturn the log of x" << endl;
+	cout << "\tln(x)\treturn the natural log of x" << endl;
 	cout << "\tfact(x)\treturn the factorial of x" << endl;
 	cout << "\tmem(n)\tthe value in memory location n, where n is 0 - 9" << endl << endl;
 	cout << "Constants supported:" << endl;

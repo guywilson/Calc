@@ -1,4 +1,7 @@
 #include <iostream>
+#include <cstring>
+#include <sstream>
+#include <string>
 #include <string.h>
 #include <stdlib.h>
 
@@ -11,15 +14,15 @@
 
 using namespace std;
 
-void Calculator::convertToRPN(char * pszExpression, size_t bufferLength, Queue * outputQueue)
+void Calculator::convertToRPN(const string & expression, Queue * outputQueue)
 {
 	Stack * operatorStack = new Stack();
-	
-	CalcTokenizer tok(pszExpression, bufferLength);
-	
+
+	CalcTokenizer tok(expression);
+
 	while (tok.hasMoreTokens()) {
 		Token * t = tok.nextToken();
-		
+
 		/*
 		** If the token is a number, then push it to the output queue.
 		*/
@@ -34,9 +37,9 @@ void Calculator::convertToRPN(char * pszExpression, size_t bufferLength, Queue *
 		}
 		/*
 		** If the token is an operator, o1, then:
-		**	while there is an operator token o2, at the top of the operator stack 
+		**	while there is an operator token o2, at the top of the operator stack
 		**	and either
-		**	o1 is left-associative and its precedence is less than or equal to that 
+		**	o1 is left-associative and its precedence is less than or equal to that
 		**	of o2, or
 		**	o1 is right associative, and has precedence less than that of o2,
 		**	pop o2 off the operator stack, onto the output queue;
@@ -44,18 +47,18 @@ void Calculator::convertToRPN(char * pszExpression, size_t bufferLength, Queue *
 		*/
 		else if (t->isOperator()) {
 			Operator * o1 = (Operator *)t;
-			
+
 			while (operatorStack->getItemCount() > 0) {
 				int topOfStack = (int)(operatorStack->getItemCount() - 1);
-				
+
 				Token * topToken = (Token *)operatorStack->peek(topOfStack);
-				
+
 				if (!topToken->isOperator()) {
 					break;
 				}
-				
+
 				Operator * o2 = (Operator *)topToken;
-				
+
 				if ((o1->getAssociativity() == Left && o1->getPrecedence() <= o2->getPrecedence()) ||
 					(o1->getAssociativity() == Right && o1->getPrecedence() < o2->getPrecedence()))
 				{
@@ -66,12 +69,12 @@ void Calculator::convertToRPN(char * pszExpression, size_t bufferLength, Queue *
 					break;
 				}
 			}
-			
+
 			operatorStack->push(o1);
 		}
 		else if (t->isBrace()) {
 			Brace * br = (Brace *)t;
-			
+
 			/*
 			** If the token is a left parenthesis (i.e. "("), then push it onto the stack.
 			*/
@@ -81,22 +84,22 @@ void Calculator::convertToRPN(char * pszExpression, size_t bufferLength, Queue *
 			else {
 				/*
 				If the token is a right parenthesis (i.e. ")"):
-					Until the token at the top of the stack is a left parenthesis, pop 
+					Until the token at the top of the stack is a left parenthesis, pop
 					operators off the stack onto the output queue.
 					Pop the left parenthesis from the stack, but not onto the output queue.
-					If the token at the top of the stack is a function token, pop it onto 
+					If the token at the top of the stack is a function token, pop it onto
 					the output queue.
-					If the stack runs out without finding a left parenthesis, then there 
+					If the stack runs out without finding a left parenthesis, then there
 					are mismatched parentheses.
 				*/
 				bool foundLeftParenthesis = false;
-				
+
 				while (operatorStack->getItemCount() > 0) {
 					Token * stackToken = (Token *)operatorStack->pop();
-					
+
 					if (stackToken->isBrace()) {
 						Brace * br = (Brace *)stackToken;
-						
+
 						if (br->getType() == Open) {
 							foundLeftParenthesis = true;
 							break;
@@ -106,7 +109,7 @@ void Calculator::convertToRPN(char * pszExpression, size_t bufferLength, Queue *
 						outputQueue->addItem(stackToken);
 					}
 				}
-				
+
 				if (!foundLeftParenthesis) {
 					/*
 					** If we've got here, we must have unmatched parenthesis...
@@ -125,13 +128,13 @@ void Calculator::convertToRPN(char * pszExpression, size_t bufferLength, Queue *
 
 	/*
 	While there are still operator tokens in the stack:
-		If the operator token on the top of the stack is a parenthesis, 
+		If the operator token on the top of the stack is a parenthesis,
 		then there are mismatched parentheses.
 		Pop the operator onto the output queue.
 	*/
 	while (operatorStack->getItemCount() > 0) {
 		Token * stackToken = (Token *)operatorStack->pop();
-		
+
 		if (stackToken->isBrace()) {
 			/*
 			** If we've got here, we must have unmatched parenthesis...
@@ -148,33 +151,34 @@ void Calculator::convertToRPN(char * pszExpression, size_t bufferLength, Queue *
 			outputQueue->addItem(stackToken);
 		}
 	}
-	
+
 	delete operatorStack;
 }
 
-double Calculator::evaluate(char * pszExpression, size_t bufferLength)
+cl_F Calculator::evaluate(const string & expression, string * resultBuffer)
 {
-	double		result = 0.0;
-	
+	cl_F 						result;
+	istreambuf_iterator<char>	eos;
+
 	Queue * outputQueue = new Queue();
-	
+
 	DebugHelper * dbg = DebugHelper::getInstance();
-	
+
 	/*
 	** Convert the calculation in infix notation to the postfix notation
 	** (Reverse Polish Notation) using the 'shunting yard algorithm'...
 	*/
-	convertToRPN(pszExpression, bufferLength, outputQueue);
-	
+	convertToRPN(expression, outputQueue);
+
 	Stack * stack = new Stack();
-	
+
 	while (outputQueue->getItemCount() > 0) {
 		Token * t = (Token *)outputQueue->getItem();
-		
+
 		if (dbg->getDebugState()) {
 			cout << "RPN: Got Token '" << t->getToken() << "'" << endl;
 		}
-		
+
 		if (t->isOperand()) {
 			stack->push(t);
 		}
@@ -197,11 +201,11 @@ double Calculator::evaluate(char * pszExpression, size_t bufferLength)
 					}
 
 					Operand * o1 = (Operand *)stack->pop();
-					
-					Operand * result = f->evaluate(o1);
-					
+
+					Operand * result = f->evaluate(*o1);
+
 					stack->push(result);
-					
+
 					delete o1;
 				}
 				else {
@@ -217,20 +221,20 @@ double Calculator::evaluate(char * pszExpression, size_t bufferLength)
 
 					Operand * o2 = (Operand *)stack->pop();
 					Operand * o1 = (Operand *)stack->pop();
-					
+
 					Operator * op = (Operator *)t;
 
-					Operand * result = op->evaluate(o1, o2);
-					
+					Operand * result = op->evaluate(*o1, *o2);
+
 					stack->push(result);
-					
+
 					delete o1;
 					delete o2;
 				}
 			}
 		}
 	}
-	
+
 	/*
 	** If there is one and only one item left on the stack,
 	** it is the result of the calculation. Otherwise, we
@@ -238,15 +242,28 @@ double Calculator::evaluate(char * pszExpression, size_t bufferLength)
 	*/
 	if (stack->getItemCount() == 1) {
 		Operand * o = (Operand *)stack->pop();
-		
-		result = o->getValue();
-		
-		free(o);
-		free(stack);
+
+		result = o->getDoubleValue();
+
+		delete o;
+		delete stack;
+
+		cl_print_flags cpf;
+		cpf.default_float_format = float_format(result);
+
+		stringstream buf;
+
+		print_real(buf, cpf, result);
+
+		istreambuf_iterator<char> it = buf.rdbuf();
+
+		while (it != eos) {
+			*resultBuffer += *it++;
+		}
 	}
 	else {
-		free(stack);
-		
+		delete stack;
+
 		throw new Exception(
 					ERR_RPN_PARSE,
 					"Too many arguments left on stack",
@@ -255,11 +272,11 @@ double Calculator::evaluate(char * pszExpression, size_t bufferLength)
 					"evaluate()",
 					__LINE__);
 	}
-	
+
 	return result;
 }
 
-void Calculator::store(int memoryNum, double result)
+void Calculator::store(int memoryNum, cl_F result)
 {
 	Function::memoryStore(memoryNum, result);
 }
