@@ -1,10 +1,8 @@
+#include <string>
 #include "types.h"
 
 #ifndef _INCL_EXCEPTION
 #define _INCL_EXCEPTION
-
-#define MESSAGE_BUFFER_SIZE			1024
-#define EXCEPTION_BUFFER_SIZE		2048
 
 #define	ERR_MALLOC					0x00000001
 #define ERR_INDEX_OUT_OF_RANGE		0x00000002
@@ -16,44 +14,46 @@
 
 #define ERR_UNDEFINED				0x0000FFFF
 
+using namespace std;
+
 class Exception
 {
 	private:
 		dword		errorCode;
-		char		szMessage[MESSAGE_BUFFER_SIZE];
-		
-		char		szFileName[256];
-		char		szClassName[128];
-		char		szMethodName[128];
-		
-		char 		exception[EXCEPTION_BUFFER_SIZE];
-		
+		string		message;
+
+		string		fileName;
+		string		className;
+		string		methodName;
+
+		string 		exception;
+
 		dword		lineNumber;
-		
+
 		void		_initialise();
-		
+
 	public:
 					Exception();
-					Exception(const char *pszMessage);
-					Exception(dword errorCode, const char *pszMessage);
+					Exception(const string & message);
+					Exception(dword errorCode, const string & message);
 					Exception(
-							dword errorCode, 
-							const char *pszMessage, 
-							const char *pszFileName, 
-							const char *pszClassName, 
-							const char *pszMethodName, 
+							dword errorCode,
+							const string & message,
+							const string & fileName,
+							const string & className,
+							const string & methodName,
 							dword lineNumber);
-							
+
 		dword		getErrorCode();
 		dword		getLineNumber();
-		
-		char *		getFileName();
-		char *		getClassName();
-		char *		getMethodName();
-		
-		char *		getMessage();
-		
-		char *		getExceptionString();
+
+		string &	getFileName();
+		string &	getClassName();
+		string &	getMethodName();
+
+		string &	getMessage();
+
+		string &	getExceptionString();
 };
 
 #endif

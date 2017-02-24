@@ -1,4 +1,3 @@
-#include <string.h>
 #include <stdio.h>
 
 #include "secure_func.h"
@@ -6,11 +5,12 @@
 
 void Exception::_initialise()
 {
-	this->szMessage[0] = '\0';
-	this->szFileName[0] = '\0';
-	this->szClassName[0] = '\0';
-	this->szMethodName[0] = '\0';
-	
+	this->message.clear();
+	this->fileName.clear();
+	this->className.clear();
+	this->methodName.clear();
+	this->exception.clear();
+
 	this->errorCode = 0L;
 	this->lineNumber = 0L;
 }
@@ -19,100 +19,74 @@ Exception::Exception()
 {
 	_initialise();
 	this->errorCode = ERR_UNDEFINED;
-	strcpy_s(this->szMessage, MESSAGE_BUFFER_SIZE, "Undefined exeption");
+	this->message = "Undefined exeption";
 }
 
-Exception::Exception(const char *pszMessage)
+Exception::Exception(const string & message)
 {
 	_initialise();
-	strcpy_s(this->szMessage, MESSAGE_BUFFER_SIZE, pszMessage);
+	this->message = message;
 }
 
-Exception::Exception(dword errorCode, const char *pszMessage)
-{
-	_initialise();
-	this->errorCode = errorCode;
-	strcpy_s(this->szMessage, MESSAGE_BUFFER_SIZE, pszMessage);
-}
-
-Exception::Exception(dword errorCode, const char *pszMessage, const char *pszFileName, const char *pszClassName, const char *pszMethodName, dword lineNumber)
+Exception::Exception(dword errorCode, const string & message)
 {
 	_initialise();
 	this->errorCode = errorCode;
-	strcpy_s(this->szMessage, MESSAGE_BUFFER_SIZE, pszMessage);
-	strcpy_s(this->szFileName, MESSAGE_BUFFER_SIZE, pszFileName);
-	strcpy_s(this->szClassName, MESSAGE_BUFFER_SIZE, pszClassName);
-	strcpy_s(this->szMethodName, MESSAGE_BUFFER_SIZE, pszMethodName);
+	this->message = message;
+}
+
+Exception::Exception(dword errorCode, const string & message, const string & fileName, const string & className, const string & methodName, dword lineNumber)
+{
+	_initialise();
+	this->errorCode = errorCode;
+	this->message = message;
+	this->fileName = fileName;
+	this->className = className;
+	this->methodName = methodName;
 	this->lineNumber = lineNumber;
 }
 
-dword Exception::getErrorCode()
-{
+dword Exception::getErrorCode() {
 	return this->errorCode;
 }
 
-dword Exception::getLineNumber()
-{
+dword Exception::getLineNumber() {
 	return this->lineNumber;
 }
 
-char *Exception::getFileName()
-{
-	return this->szFileName;
+string & Exception::getFileName() {
+	return this->fileName;
 }
 
-char *Exception::getClassName()
-{
-	return this->szClassName;
+string & Exception::getClassName() {
+	return this->className;
 }
 
-char *Exception::getMethodName()
-{
-	return this->szMethodName;
+string & Exception::getMethodName() {
+	return this->methodName;
 }
 
-char *Exception::getMessage()
-{
-	return this->szMessage;
+string & Exception::getMessage() {
+	return this->message;
 }
 
-char *Exception::getExceptionString()
+string & Exception::getExceptionString()
 {
-	char		szLineNum[8];
-	
-	exception[0] = '\0';
-	
 	if (errorCode) {
-	#ifdef _WIN32
-		sprintf_s(exception, EXCEPTION_BUFFER_SIZE, "*** Exception (0x%04X) : ", (unsigned int)errorCode);
-	#else
-		sprintf(exception, "*** Exception (0x%04X) : ", (unsigned int)errorCode);
-	#endif
+		exception = "*** Exception (" + to_string(errorCode) + ") : ";
 	}
 	else {
-		strcat_s(exception, EXCEPTION_BUFFER_SIZE, "*** Exception : ");
+		exception = "*** Exception : ";
 	}
-	
-	strcat_s(exception, EXCEPTION_BUFFER_SIZE, szMessage);
-	strcat_s(exception, EXCEPTION_BUFFER_SIZE, " ***");
-	
-	if (strlen(szFileName) > 0 && strlen(szClassName) > 0 && strlen(szMethodName) > 0) {
-		strcat_s(exception, EXCEPTION_BUFFER_SIZE, "\nIn ");
-		strcat_s(exception, EXCEPTION_BUFFER_SIZE, szFileName);
-		strcat_s(exception, EXCEPTION_BUFFER_SIZE, " - ");
-		strcat_s(exception, EXCEPTION_BUFFER_SIZE, szClassName);
-		strcat_s(exception, EXCEPTION_BUFFER_SIZE, "::");
-		strcat_s(exception, EXCEPTION_BUFFER_SIZE, szMethodName);
+
+	exception += message + " ***";
+
+	if (fileName.length() > 0 && className.length() > 0 && methodName.length() > 0) {
+		exception += "\nIn " + fileName + " - " + className + "::" + methodName;
 	}
-	
+
 	if (lineNumber > 0) {
-		strcat_s(exception, EXCEPTION_BUFFER_SIZE, " at line ");
-	#ifdef _WIN32
-		sprintf_s(szLineNum, 8, "%ld", lineNumber);
-	#else
-		sprintf(szLineNum, "%ld", lineNumber);
-	#endif
-		strcat_s(exception, EXCEPTION_BUFFER_SIZE, szLineNum);
+		exception += " at line " + to_string(lineNumber);
 	}
 
 	return exception;
