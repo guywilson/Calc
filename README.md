@@ -3,7 +3,7 @@ A command line scientific calculator written in C++. The calculator converts the
 
 Building Calc
 -------------
-Calc now has a dependency on CLN (Class Library for Numbers) http://www.ginac.de/CLN to allow arbitary precision decimal numbers. I have provided makefiles for both Windows (NOT CURRENTLY WORKING UNTIL I GET CLN COMPILED ON WINDOWS) (compiled using MS Visual Studio C++ 2015 Community Edition and tested on Windows 10), Unix (compiled using gcc and tested on Ubuntu 16.04 64-bit) and Mac OSX (compiled using gcc and tested on Mac OSX Sierra).
+Calc now has a dependency on CLN (Class Library for Numbers) http://www.ginac.de/CLN to allow arbitary precision decimal numbers. To compile CLN on Windows, use gcc on cygwin. I have provided makefiles for Windows (must be compiled using gcc under cygwin, tested on Windows 10), Unix (compiled using gcc and tested on Ubuntu 16.04 64-bit) and Mac OSX (compiled using gcc and tested on Mac OSX Sierra).
 
 Using Calc
 ----------
