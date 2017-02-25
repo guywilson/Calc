@@ -15,8 +15,6 @@
 #include "exception.h"
 #include "debug.h"
 
-#define CALC_BUFFER_LEN				1024
-
 using namespace std;
 using namespace cln;
 

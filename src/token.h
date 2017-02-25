@@ -6,8 +6,6 @@
 #ifndef _INCL_TOKEN
 #define _INCL_TOKEN
 
-#define TOKEN_LENGTH		64
-#define CLASSNAME_LENGTH	16
 #define FLOAT_PRECISION		64
 
 using namespace std;

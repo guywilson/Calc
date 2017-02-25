@@ -55,6 +55,7 @@ class Calculator
 
 	public:
 		static cl_F 	evaluate(const string & expression, string * resultBuffer);
+		static string * evaluate(const string & expression);
 
 		static void		store(int memoryNum, cl_F result);
 };

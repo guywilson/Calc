@@ -276,6 +276,15 @@ cl_F Calculator::evaluate(const string & expression, string * resultBuffer)
 	return result;
 }
 
+string * Calculator::evaluate(const string & expression)
+{
+	string * pResult = new string();
+
+	Calculator::evaluate(expression, pResult);
+
+	return pResult;
+}
+
 void Calculator::store(int memoryNum, cl_F result)
 {
 	Function::memoryStore(memoryNum, result);
