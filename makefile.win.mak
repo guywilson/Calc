@@ -30,13 +30,17 @@ LINKER=g++
 CPPFLAGS=-c -fpermissive -std=c++11 -O2 -I$(TOOLS)\include
 
 # Object files (in linker ',' seperated format)
-OBJFILES=$(BUILD)/main.o $(BUILD)/token.o $(BUILD)/calc.o $(BUILD)/stack.o $(BUILD)/exception.o $(BUILD)/debug.o $(BUILD)/test.o
+LIBFILES=$(BUILD)/calclib.o $(BUILD)/token.o $(BUILD)/calc.o $(BUILD)/stack.o $(BUILD)/exception.o $(BUILD)/debug.o $(BUILD)/test.o
+OBJFILES=$(LIBFILES) $(BUILD)/main.o
 
 # Target
 all: $(TARGET)
 
 # Compile C source files
 #
+$(BUILD)/calclib.o: $(SOURCE)/calclib.cpp $(SOURCE)/calclib.h $(SOURCE)/calc.h
+	$(CPP) $(CPPFLAGS) -o $(BUILD)/calclib.o $(SOURCE)/calclib.cpp
+
 $(BUILD)/main.o: $(SOURCE)/main.cpp $(SOURCE)/calc.h $(SOURCE)/token.h $(SOURCE)/types.h $(SOURCE)/exception.h $(SOURCE)/debug.h
 	$(CPP) $(CPPFLAGS) -o $(BUILD)/main.o $(SOURCE)/main.cpp
 
@@ -59,4 +63,5 @@ $(BUILD)/test.o: $(SOURCE)/test.cpp $(SOURCE)/test.h $(SOURCE)/token.h $(SOURCE)
 	$(CPP) $(CPPFLAGS) -o $(BUILD)/test.o $(SOURCE)/test.cpp
 
 $(TARGET): $(OBJFILES)
-	$(LINKER) -O2 -o $(TARGET) -lstdc++ $(OBJFILES) $(TOOLS)\lib\libcln.a
+	$(LINKER) -O2 -o $(TARGET) -L$(TOOLS)\lib -lstdc++ $(OBJFILES) -lcln 
+	ar rcs libcalc.a $(LIBFILES) $(TOOLS)\lib\libcln.a
