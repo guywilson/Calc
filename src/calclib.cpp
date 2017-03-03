@@ -5,13 +5,11 @@
 
 using namespace std;
 
-namespace calc {
-    string * calculate(const string & expression)
-    {
-        string * r;
+string * calculate(const string & expression)
+{
+	string * r;
 
-        r = Calculator::evaluate(expression);
+	r = Calculator::evaluate(expression);
 
-        return r;
-    }
+	return r;
 }
