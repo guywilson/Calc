@@ -25,7 +25,7 @@ CPP=g++
 LINKER=g++
 
 # C compiler flags (Release)
-CPPFLAGS=-c -fpermissive -Wall -std=c++11
+CPPFLAGS=-c -fpermissive -arch x86_64 -Wall -std=c++11
 
 # Object files (in linker ',' seperated format)
 LIBFILES=$(BUILD)/calclib.o $(BUILD)/token.o $(BUILD)/calc.o $(BUILD)/stack.o $(BUILD)/exception.o $(BUILD)/debug.o $(BUILD)/test.o
@@ -62,4 +62,5 @@ $(BUILD)/test.o: $(SOURCE)/test.cpp $(SOURCE)/test.h $(SOURCE)/token.h $(SOURCE)
 
 $(TARGET): $(OBJFILES)
 	$(LINKER) -L/usr/local/lib -lstdc++ -lcln -o $(TARGET) $(OBJFILES)
-	libtool -static -o libcalc.a $(LIBFILES)
+	$(LINKER) -dynamiclib -arch x86_64 -bind_at_load -o libcalc.so -lcln $(LIBFILES)
+#	ar rcs libcalc.a $(LIBFILES)
