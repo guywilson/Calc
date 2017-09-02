@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
 			continue;
 		}
 
-		if (calculation.compare(0, 4, "exit") == 0) {
+		if (calculation.compare(0, 4, "exit") == 0 || calculation.compare(0, 4, "quit") == 0 || calculation[0] == 'q') {
 			loop = false;
 		}
 		else if (calculation.compare(0, 4, "test") == 0) {
