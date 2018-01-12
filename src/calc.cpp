@@ -238,7 +238,7 @@ cl_F Calculator::evaluate(const string & expression, string * resultBuffer)
 	/*
 	** If there is one and only one item left on the stack,
 	** it is the result of the calculation. Otherwise, we
-	** have to many tokens and therefore an error...
+	** have too many tokens and therefore an error...
 	*/
 	if (stack->getItemCount() == 1) {
 		Operand * o = (Operand *)stack->pop();

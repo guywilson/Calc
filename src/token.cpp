@@ -429,7 +429,7 @@ Operand	& Operand::operator^(Operand & rhs)
 
 cl_F Operand::getDoubleValue()
 {
-	return cl_float(realpart(this->_value));
+	return cl_float(realpart(this->_value), float_format(16));
 }
 
 cl_I Operand::getIntValue()
