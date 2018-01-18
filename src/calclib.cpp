@@ -9,7 +9,11 @@ string * calculate(const string & expression)
 {
 	string * r;
 
-	r = Calculator::evaluate(expression);
+    Calculator * calc = new Calculator();
+    
+	r = calc->evaluate(expression);
 
+    delete calc;
+    
 	return r;
 }

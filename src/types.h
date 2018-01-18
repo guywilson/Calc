@@ -18,6 +18,14 @@ Associativity;
 
 typedef enum
 {
+    Dec         = 0x0A,
+    Hex         = 0x0B,
+    Bin         = 0x0C
+}
+Base;
+
+typedef enum
+{
 	Plus 		= 0x10,
 	Minus 		= 0x11,
 	Multiply 	= 0x12,

@@ -12,12 +12,13 @@
 using namespace std;
 using namespace cln;
 
-static cl_F _memory[10] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+static cl_N _memory[10] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
 
 Token::Token(const string & token)
 {
 	this->_token = token;
+    this->_base = Dec;
 }
 
 Token::Token(const string & token, const string & className) : Token(token)
@@ -46,6 +47,46 @@ string & Token::getClass()
 	return this->_className;
 }
 
+void Token::setMode(Base b)
+{
+    this->_base = b;
+}
+
+Base Token::getMode()
+{
+    return this->_base;
+}
+
+bool Token::isDecDigit(const char digit)
+{
+    if (!isdigit(digit) && digit != '.' && digit != '-') {
+        return false;
+    }
+    else {
+        return true;
+    }
+}
+
+bool Token::isHexDigit(const char digit)
+{
+    if (isdigit(digit) || (toupper(digit) >= 'A' && toupper(digit) <= 'F')) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool Token::isBinDigit(const char digit)
+{
+    if (digit == '0' || digit == '1') {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 bool Token::isOperand(const string & token) {
 	int		i;
 	bool	ret = true;
@@ -57,7 +98,7 @@ bool Token::isOperand(const string & token) {
 	}
 	else {
 		for (i = 0;i < (int)tokenLength;i++) {
-			if (!isdigit(token[i]) && token[i] != '.' && token[i] != '-') {
+			if (!isDecDigit(token[i]) && !isHexDigit(token[i]) && !isBinDigit(token[i])) {
 				ret = false;
 				break;
 			}
@@ -193,8 +234,10 @@ bool Token::isFunction(const string & token) {
 }
 
 
-Operator::Operator(const string & token) : Token(token, "Operator")
+Operator::Operator(const string & token, Base b) : Token(token, "Operator")
 {
+    setMode(b);
+    
 	if (Token::isOperatorPlus(token)) {
 		op = Plus;
 		precedence = 2;
@@ -206,21 +249,61 @@ Operator::Operator(const string & token) : Token(token, "Operator")
 		assoc = Left;
 	}
 	else if (Token::isOperatorMultiply(token)) {
+        if (getMode() != Dec) {
+            throw new Exception(
+                        ERR_INVALID_TOKEN,
+                        "Invalid token found for mode",
+                        __FILE__,
+                        "Operator",
+                        "init()",
+                        __LINE__);
+        }
+        
 		op = Multiply;
 		precedence = 3;
 		assoc = Left;
 	}
 	else if (Token::isOperatorDivide(token)) {
+        if (getMode() != Dec) {
+            throw new Exception(
+                        ERR_INVALID_TOKEN,
+                        "Invalid token found for mode",
+                        __FILE__,
+                        "Operator",
+                        "init()",
+                        __LINE__);
+        }
+        
 		op = Divide;
 		precedence = 3;
 		assoc = Left;
 	}
 	else if (Token::isOperatorPower(token)) {
+        if (getMode() != Dec) {
+            throw new Exception(
+                        ERR_INVALID_TOKEN,
+                        "Invalid token found for mode",
+                        __FILE__,
+                        "Operator",
+                        "init()",
+                        __LINE__);
+        }
+        
 		op = Power;
 		precedence = 4;
 		assoc = Right;
 	}
 	else if (Token::isOperatorMod(token)) {
+        if (getMode() != Dec) {
+            throw new Exception(
+                        ERR_INVALID_TOKEN,
+                        "Invalid token found for mode",
+                        __FILE__,
+                        "Operator",
+                        "init()",
+                        __LINE__);
+        }
+        
 		op = Mod;
 		precedence = 3;
 		assoc = Left;
@@ -313,8 +396,10 @@ Operand * Operator::evaluate(Operand & o1, Operand & o2)
 }
 
 
-Brace::Brace(const string & token) : Token(token, "Brace")
+Brace::Brace(const string & token, Base b) : Token(token, "Brace")
 {
+    setMode(b);
+    
 	if (Token::isBraceLeft(token)) {
 		type = Open;
 	}
@@ -334,7 +419,7 @@ Operand::Operand(Operand & src)
 	_value = src.getDoubleValue();
 }
 
-Operand::Operand(const string & token) : Token(token, "Operand")
+Operand::Operand(const string & token, Base b) : Token(token, "Operand")
 {
 	int		tokenLen;
 	int		i = 0;
@@ -346,25 +431,33 @@ Operand::Operand(const string & token) : Token(token, "Operand")
 
 	operand = token;
 
-	while (i < tokenLen) {
-		if (token[i] == '.') {
-			isFloat = true;
-			break;
-		}
+    setMode(b);
+    
+    if (b == Dec) {
+        while (i < tokenLen) {
+            if (token[i] == '.') {
+                isFloat = true;
+                break;
+            }
 
-		i++;
-	}
+            i++;
+        }
 
-	if (!isFloat) {
-		operand += ".0";
-	}
+        if (!isFloat) {
+            operand += ".0";
+        }
 
-	sprintf(szPrecision, "_%d", FLOAT_PRECISION);
-	operand += szPrecision;
+        sprintf(szPrecision, "_%d", FLOAT_PRECISION);
+        operand += szPrecision;
 
-	cl_F op = operand.c_str();
-
-	_value = op;
+        _value = operand.c_str();
+    }
+    else if (b == Hex) {
+        _value = strtoll(operand.c_str(), NULL, 16);
+    }
+    else if (b == Bin) {
+        _value = strtoll(operand.c_str(), NULL, 2);
+    }
 }
 
 Operand::Operand(cl_F x)
@@ -379,7 +472,32 @@ Operand::Operand(cl_N n)
 
 Operand::Operand(cl_I i)
 {
-	_value = cl_float(i, float_format(FLOAT_PRECISION));
+	_value = i;
+}
+
+Operand::Operand(double d)
+{
+	_value = d;
+}
+
+Operand::Operand(int i)
+{
+	_value = i;
+}
+
+Operand::Operand(unsigned int i)
+{
+	_value = i;
+}
+
+Operand::Operand(long l)
+{
+	_value = l;
+}
+
+Operand::Operand(unsigned long l)
+{
+	_value = l;
 }
 
 Operand::Operand(const string & token, const string & className) : Token(token, className)
@@ -388,22 +506,22 @@ Operand::Operand(const string & token, const string & className) : Token(token, 
 
 Operand & Operand::operator+(Operand & rhs)
 {
-	setValue(getDoubleValue() + rhs.getDoubleValue());
+	setValue(getValue() + rhs.getValue());
 	return *this;
 }
 Operand	& Operand::operator-(Operand & rhs)
 {
-	setValue(getDoubleValue() - rhs.getDoubleValue());
+	setValue(getValue() - rhs.getValue());
 	return *this;
 }
 Operand	& Operand::operator*(Operand & rhs)
 {
-	setValue(getDoubleValue() * rhs.getDoubleValue());
+	setValue(getValue() * rhs.getValue());
 	return *this;
 }
 Operand	& Operand::operator/(Operand & rhs)
 {
-	setValue(getDoubleValue() / rhs.getDoubleValue());
+	setValue(getValue() / rhs.getValue());
 	return *this;
 }
 Operand	& Operand::operator%(Operand & rhs)
@@ -425,6 +543,11 @@ Operand	& Operand::operator^(Operand & rhs)
 {
 	setValue(getIntValue() ^ rhs.getIntValue());
 	return *this;
+}
+
+cl_N Operand::getValue()
+{
+	return this->_value;
 }
 
 cl_F Operand::getDoubleValue()
@@ -457,8 +580,20 @@ void Operand::setValue(cl_I i)
 }
 
 
-Constant::Constant(const string & token) : Operand(token, "Constant")
+Constant::Constant(const string & token, Base b) : Operand(token, "Constant")
 {
+    setMode(b);
+    
+    if (getMode() != Dec) {
+        throw new Exception(
+                    ERR_INVALID_TOKEN,
+                    "Invalid token found for mode",
+                    __FILE__,
+                    "Function",
+                    "init()",
+                    __LINE__);
+    }
+        
 	if (Token::isConstantPi(token)) {
 		constant = Pi;
 		setValue(pi(float_format(FLOAT_PRECISION)));
@@ -475,8 +610,20 @@ Const Constant::getConstant()
 }
 
 
-Function::Function(const string & token) : Operator(token, "Function")
+Function::Function(const string & token, Base b) : Operator(token, "Function")
 {
+    setMode(b);
+    
+    if (getMode() != Dec) {
+        throw new Exception(
+                    ERR_INVALID_TOKEN,
+                    "Invalid token found for mode",
+                    __FILE__,
+                    "Function",
+                    "init()",
+                    __LINE__);
+    }
+        
 	if (Token::isFunctionSine(token)) {
 		function = Sine;
 		numArguments = 1;
@@ -600,30 +747,30 @@ cl_I Function::_factorial(cl_I arg)
 	return result;
 }
 
-void Function::memoryStore(int memoryNum, cl_F value)
+void Function::memoryStore(int memoryNum, cl_N value)
 {
 	_memory[memoryNum] = value;
 }
 
 
-Token * TokenFactory::createToken(const string & token)
+Token * TokenFactory::createToken(const string & token, Base b)
 {
 	Token * t;
 
 	if (Token::isOperand(token)) {
-		t = new Operand(token);
+		t = new Operand(token, b);
 	}
 	else if (Token::isOperator(token)) {
-		t = new Operator(token);
+		t = new Operator(token, b);
 	}
 	else if (Token::isBrace(token)) {
-		t = new Brace(token);
+		t = new Brace(token, b);
 	}
 	else if (Token::isConstant(token)) {
-		t = new Constant(token);
+		t = new Constant(token, b);
 	}
 	else if (Token::isFunction(token)) {
-		t = new Function(token);
+		t = new Function(token, b);
 	}
 	else {
 		throw new Exception(
@@ -635,16 +782,19 @@ Token * TokenFactory::createToken(const string & token)
 					__LINE__);
 	}
 
+    t->setMode(b);
+    
 	return t;
 }
 
 
-CalcTokenizer::CalcTokenizer(const string & expression)
+CalcTokenizer::CalcTokenizer(const string & expression, Base b)
 {
 	this->_expression = expression;
 	startIndex = 0;
 	endIndex = 0;
 	expressionLen = expression.length();
+    this->_base = b;
 }
 
 bool CalcTokenizer::_isToken(char ch)
@@ -767,5 +917,5 @@ Token * CalcTokenizer::nextToken()
 
 	startIndex = endIndex;
 
-	return TokenFactory::createToken(token);
+	return TokenFactory::createToken(token, this->_base);
 }

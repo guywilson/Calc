@@ -23,10 +23,11 @@ void printHelp(void);
 int main(int argc, char *argv[])
 {
 	string						calculation;
+    string                      resultBuffer;
 	int							i;
 	bool						loop;
 	bool						hasParams = false;
-	cl_F						result = 0.0;
+	cl_N						result = 0.0;
 	DebugHelper *				dbg;
 	istreambuf_iterator<char>	eos;
 
@@ -40,6 +41,8 @@ int main(int argc, char *argv[])
 
 	dbg = DebugHelper::getInstance();
 
+    Calculator * calc = new Calculator();
+    
 	if (!hasParams) {
 		cout << "Welcome to Calc. A command line scientific calculator." << endl;
 		cout << "Type a calculation or command at the prompt, type 'help' for info." << endl << endl;
@@ -49,7 +52,7 @@ int main(int argc, char *argv[])
 
 	while (loop) {
 		if (!hasParams) {
-			cout << "calc> ";
+			cout << "calc [" << calc->getModeStr() << "]> ";
 			getline(cin, calculation);
 
 			if (dbg->getDebugState()) {
@@ -80,51 +83,48 @@ int main(int argc, char *argv[])
 				memoryNum = atoi(calculation.substr(5).c_str());
 			}
 
-			Calculator::store(memoryNum, result);
+			calc->store(memoryNum, result);
+		}
+		else if (calculation.compare(0, 3, "dec") == 0) {
+            calc->setMode(Dec);
+
+            cl_print_flags cpf;
+            cpf.default_float_format = float_format(16);
+
+            cl_F f = cl_float(realpart(result), float_format(16));
+            
+            stringstream buf;
+
+            print_real(buf, cpf, f);
+            
+            cout << "Result = " << buf.str() << endl;
 		}
 		else if (calculation.compare(0, 3, "hex") == 0) {
-			stringstream buf;
-
-			cl_I intResult;
-			intResult = floor1(realpart(result));
-
-			fprinthexadecimal(buf, intResult);
-
-			istreambuf_iterator<char> it = buf.rdbuf();
-			string strbuf;
-
-			while (it != eos) {
-				strbuf += *it++;
-			}
-
-			cout << "0x" << strbuf << endl;
+            calc->setMode(Hex);
+            
+            stringstream buf;
+            fprinthexadecimal(buf, floor1(realpart(result)));
+            
+            cout << "Result = 0x" << buf.str() << endl;
 		}
 		else if (calculation.compare(0, 3, "bin") == 0) {
-			stringstream buf;
-
-			cl_I intResult;
-			intResult = floor1(realpart(result));
-
-			fprintbinary(buf, intResult);
-
-			istreambuf_iterator<char> it = buf.rdbuf();
-			string strbuf;
-
-			while (it != eos) {
-				strbuf += *it++;
-			}
-
-			cout << strbuf << endl;
+            calc->setMode(Bin);
+            
+            stringstream buf;
+            fprintbinary(buf, floor1(realpart(result)));
+            
+            cout << "Result = b" << buf.str() << endl;
 		}
 		else if (calculation.compare(0, 4, "help") == 0 || calculation[0] == '?') {
 			printHelp();
 		}
 		else {
 			try {
-				string resultBuffer;
-				result = Calculator::evaluate(calculation, &resultBuffer);
+				result = calc->evaluate(calculation, &resultBuffer);
 
 				cout << calculation << " = " << resultBuffer << endl;
+                
+                resultBuffer.clear();
 			}
 			catch (Exception * e) {
 				cout << "Caught exception: " << e->getExceptionString() << endl;
@@ -136,6 +136,8 @@ int main(int argc, char *argv[])
 		}
 	}
 
+    delete calc;
+    
 	return 0;
 }
 
@@ -163,6 +165,9 @@ void printHelp(void)
 	cout << "\tc\tthe speed of light in a vacuum" << endl << endl;
 	cout << "Commands supported:" << endl;
 	cout << "\tmemstn\tStore the last result in memory location n (0 - 9)" << endl;
+    cout << "\tdec\tSwitch to decimal mode" << endl;
+    cout << "\thex\tSwitch to hexadecimal mode" << endl;
+    cout << "\tbin\tSwitch to binary mode" << endl;
 	cout << "\ttest\tSelf test of the calculator" << endl;
 	cout << "\thelp\tThis help text" << endl;
 	cout << "\tdbgon\tTurn on debugging output" << endl;

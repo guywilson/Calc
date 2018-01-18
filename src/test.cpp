@@ -35,7 +35,7 @@ int assertEqualTo(double actualResult, double expectedResult)
 
 bool testCalculation(string & calculation, double expectedResult)
 {
-	cl_F		result = 0.0;
+	cl_N		result = 0.0;
 	bool		isSuccess = true;
 	string		resultBuffer;
 
@@ -43,10 +43,12 @@ bool testCalculation(string & calculation, double expectedResult)
 	cout << "\nTesting calculation:" << endl;
 	cout << "\t" << calculation << endl;;
 
-	result = Calculator::evaluate(calculation, &resultBuffer);
-
-	cout << "\tActual ["  << std::setprecision(4) << double_approx(result) << "] Expected [" << expectedResult << "]" << endl;
-	isSuccess = (assertEqualTo(double_approx(result), expectedResult) != 0);
+    Calculator * calc = new Calculator();
+	result = calc->evaluate(calculation, &resultBuffer);
+    delete calc;
+    
+	cout << "\tActual ["  << std::setprecision(4) << double_approx(cl_float(realpart(result), float_format(16))) << "] Expected [" << expectedResult << "]" << endl;
+	isSuccess = (assertEqualTo(double_approx(cl_float(realpart(result), float_format(16))), expectedResult) != 0);
 
 	return isSuccess;
 }
@@ -60,7 +62,9 @@ bool testValidation(string & calculation)
 	cout << "\t" << calculation << endl;
 
 	try {
-		Calculator::evaluate(calculation, &resultBuffer);
+        Calculator * calc = new Calculator();
+		calc->evaluate(calculation, &resultBuffer);
+        delete calc;
 	}
 	catch (Exception * e) {
 		cout << "Exception caught: " << e->getExceptionString() << endl << endl;

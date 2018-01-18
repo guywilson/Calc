@@ -16,6 +16,11 @@ class Token
 	private:
 		string			_token;
 		string			_className;
+        Base            _base;
+        
+        static bool     isDecDigit(const char digit);
+        static bool     isHexDigit(const char digit);
+        static bool     isBinDigit(const char digit);
 
 	protected:
 		Token(const string & token, const string & className);
@@ -31,6 +36,9 @@ class Token
 		string	&		getToken();
 		string	&		getClass();
 
+        void            setMode(Base b);
+        Base            getMode();
+        
 		virtual bool	isOperand() {
 							return false;
 						}
@@ -85,6 +93,9 @@ class Operand : public Token
 {
 	private:
 		cl_N			_value;
+        
+        void            hex2dec();
+        void            bin2dec();
 
 	protected:
 		void 			setValue(cl_F x);
@@ -93,10 +104,15 @@ class Operand : public Token
 
 	public:
 		Operand(Operand & src);
-		Operand(const string & token);
+		Operand(const string & token, Base b);
 		Operand(cl_F x);
 		Operand(cl_I i);
 		Operand(cl_N n);
+        Operand(double d);
+        Operand(int i);
+        Operand(unsigned int i);
+        Operand(long l);
+        Operand(unsigned long l);
 		Operand(const string & token, const string & className);
 
 		virtual 		~Operand() {}
@@ -111,6 +127,7 @@ class Operand : public Token
 		Operand	&		operator|(Operand & rhs);
 		Operand	&		operator^(Operand & rhs);
 
+        cl_N            getValue();
 		cl_F			getDoubleValue();
 		cl_I			getIntValue();
 
@@ -130,7 +147,7 @@ class Operator : public Token
 		void			setPrecedence(int precedence);
 
 	public:
-		Operator(const string & token);
+		Operator(const string & token, Base b);
 		Operator(const string & token, const string & className);
 
 		virtual			~Operator() {}
@@ -152,7 +169,7 @@ class Brace : public Token
 		BraceType		type;
 
 	public:
-		Brace(const string & token);
+		Brace(const string & token, Base b);
 
 		BraceType		getType();
 
@@ -169,7 +186,7 @@ class Constant : public Operand
 		cl_F			_pi();
 
 	public:
-		Constant(const string & token);
+		Constant(const string & token, Base b);
 
 		Const			getConstant();
 
@@ -186,11 +203,11 @@ class Function : public Operator
 		cl_I			_factorial(cl_I arg);
 
 	public:
-		Function(const string & token);
+		Function(const string & token, Base b);
 
 		Operand *		evaluate(Operand & arg1);
 
-		static void		memoryStore(int memoryNum, cl_F value);
+		static void		memoryStore(int memoryNum, cl_N value);
 
 		int				getNumArguments() {
 							return numArguments;
@@ -205,7 +222,7 @@ class Function : public Operator
 class TokenFactory
 {
 	public:
-		static Token * createToken(const string & token);
+		static Token * createToken(const string & token, Base b);
 };
 
 
@@ -222,9 +239,11 @@ class CalcTokenizer
 		bool			_isToken(char ch);
 		bool			_isWhiteSpace(char ch);
 		int				_findNextTokenPos();
+        
+        Base            _base;
 
 	public:
-		CalcTokenizer(const string & expression);
+		CalcTokenizer(const string & expression, Base b);
 
 		bool			hasMoreTokens();
 		Token *			nextToken();

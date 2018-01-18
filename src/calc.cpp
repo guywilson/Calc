@@ -1,3 +1,42 @@
+/******************************************************************************
+SHUNTING YARD ALGORITHM
+-----------------------
+
+While there are tokens to be read:
+	Read a token.
+	If the token is a number, then push it to the output queue.
+	If the token is a function token, then push it onto the stack.
+	If the token is a function argument separator (e.g., a comma):
+		Until the token at the top of the stack is a left parenthesis, pop
+		operators off the stack onto the output queue. If no left parentheses
+		are encountered, either the separator was misplaced or parentheses were
+		mismatched.
+	If the token is an operator, o1, then:
+		while there is an operator token o2, at the top of the operator stack
+		and either
+		o1 is left-associative and its precedence is less than or equal to that
+		of o2, or
+		o1 is right associative, and has precedence less than that of o2,
+		pop o2 off the operator stack, onto the output queue;
+		at the end of iteration push o1 onto the operator stack.
+	If the token is a left parenthesis (i.e. "("), then push it onto the stack.
+	If the token is a right parenthesis (i.e. ")"):
+		Until the token at the top of the stack is a left parenthesis, pop
+		operators off the stack onto the output queue.
+		Pop the left parenthesis from the stack, but not onto the output queue.
+		If the token at the top of the stack is a function token, pop it onto
+		the output queue.
+		If the stack runs out without finding a left parenthesis, then there
+		are mismatched parentheses.
+		When there are no more tokens to read:
+		While there are still operator tokens in the stack:
+			If the operator token on the top of the stack is a parenthesis,
+			then there are mismatched parentheses.
+			Pop the operator onto the output queue.
+Exit.
+
+******************************************************************************/
+
 #include <iostream>
 #include <cstring>
 #include <sstream>
@@ -14,11 +53,16 @@
 
 using namespace std;
 
-void Calculator::convertToRPN(const string & expression, Queue * outputQueue)
+Calculator::Calculator()
+{
+    this->_base = Dec;
+}
+
+void Calculator::_convertToRPN(const string & expression, Queue * outputQueue)
 {
 	Stack * operatorStack = new Stack();
 
-	CalcTokenizer tok(expression);
+	CalcTokenizer tok(expression, this->_base);
 
 	while (tok.hasMoreTokens()) {
 		Token * t = tok.nextToken();
@@ -155,9 +199,40 @@ void Calculator::convertToRPN(const string & expression, Queue * outputQueue)
 	delete operatorStack;
 }
 
-cl_F Calculator::evaluate(const string & expression, string * resultBuffer)
+Base Calculator::getMode()
 {
-	cl_F 						result;
+    return this->_base;
+}
+
+void Calculator::setMode(Base b)
+{
+    this->_base = b;
+}
+
+string Calculator::getModeStr()
+{
+    string      mode;
+    
+    switch (_base) {
+        case Dec:
+            mode = "DEC";
+            break;
+            
+        case Hex:
+            mode = "HEX";
+            break;
+            
+        case Bin:
+            mode = "BIN";
+            break;
+    }
+    
+    return mode;
+}
+
+cl_N Calculator::evaluate(const string & expression, string * resultBuffer)
+{
+	cl_N 						result;
 	istreambuf_iterator<char>	eos;
 
 	Queue * outputQueue = new Queue();
@@ -168,7 +243,7 @@ cl_F Calculator::evaluate(const string & expression, string * resultBuffer)
 	** Convert the calculation in infix notation to the postfix notation
 	** (Reverse Polish Notation) using the 'shunting yard algorithm'...
 	*/
-	convertToRPN(expression, outputQueue);
+	_convertToRPN(expression, outputQueue);
 
 	Stack * stack = new Stack();
 
@@ -243,23 +318,58 @@ cl_F Calculator::evaluate(const string & expression, string * resultBuffer)
 	if (stack->getItemCount() == 1) {
 		Operand * o = (Operand *)stack->pop();
 
-		result = o->getDoubleValue();
+        cl_F f = o->getDoubleValue();
+        cl_I i = o->getIntValue();
 
+        if (dbg->getDebugState()) {
+			cout << "RPN: Got Result - DoubleValue [" << f << "], IntValue [" << i << "]"<< endl;
+		}
+        
 		delete o;
 		delete stack;
 
-		cl_print_flags cpf;
-		cpf.default_float_format = float_format(result);
+        if (this->getMode() == Dec) {
+            cl_print_flags cpf;
+            cpf.default_float_format = float_format(f);
 
-		stringstream buf;
+            stringstream buf;
 
-		print_real(buf, cpf, result);
+            print_float(buf, cpf, f);
 
-		istreambuf_iterator<char> it = buf.rdbuf();
+            *resultBuffer = buf.str();
+            
+            if (dbg->getDebugState()) {
+                cout << "RPN: Decimal Result - '" << *resultBuffer << "'"<< endl;
+            }
+            
+            result = f;
+        }
+        else if (this->getMode() == Hex) {
+            stringstream buf;
 
-		while (it != eos) {
-			*resultBuffer += *it++;
-		}
+            fprinthexadecimal(buf, i);
+
+            *resultBuffer = "0x" + buf.str();
+
+            if (dbg->getDebugState()) {
+                cout << "RPN: Hexadecimal Result - '" << *resultBuffer << "'"<< endl;
+            }
+            
+            result = i;
+        }
+        else if (this->getMode() == Bin) {
+            stringstream buf;
+
+            fprintbinary(buf, i);
+
+            *resultBuffer = "b" + buf.str();
+
+            if (dbg->getDebugState()) {
+                cout << "RPN: Binary Result - '" << *resultBuffer << "'"<< endl;
+            }
+            
+            result = i;
+        }
 	}
 	else {
 		delete stack;
@@ -285,7 +395,7 @@ string * Calculator::evaluate(const string & expression)
 	return pResult;
 }
 
-void Calculator::store(int memoryNum, cl_F result)
+void Calculator::store(int memoryNum, cl_N result)
 {
 	Function::memoryStore(memoryNum, result);
 }
