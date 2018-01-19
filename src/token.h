@@ -55,7 +55,7 @@ class Token
 							return false;
 						}
 
-		static bool		isOperand(const string & token);
+		static bool		isOperand(const string & token, const Base b);
 		static bool		isOperatorPlus(const string & token);
 		static bool		isOperatorMinus(const string & token);
 		static bool		isOperatorMultiply(const string & token);

@@ -90,7 +90,7 @@ bool Token::isBinDigit(const char digit)
     }
 }
 
-bool Token::isOperand(const string & token) {
+bool Token::isOperand(const string & token, const Base b) {
 	int		i;
 	bool	ret = true;
 	size_t	tokenLength = token.length();
@@ -101,8 +101,30 @@ bool Token::isOperand(const string & token) {
 	}
 	else {
 		for (i = 0;i < (int)tokenLength;i++) {
-			if (!isDecDigit(token[i]) && !isHexDigit(token[i]) && !isBinDigit(token[i])) {
-				ret = false;
+            switch (b) {
+                case Dec:
+                    if (!isDecDigit(token[i])) {
+                        ret = false;
+                        break;
+                    }
+                    break;
+                    
+                case Hex:
+                    if (!isHexDigit(token[i])) {
+                        ret = false;
+                        break;
+                    }
+                    break;
+                    
+                case Bin:
+                    if (!isBinDigit(token[i])) {
+                        ret = false;
+                        break;
+                    }
+                    break;
+            }
+            
+			if (!ret) {
 				break;
 			}
 		}
@@ -844,7 +866,7 @@ Token * TokenFactory::createToken(const string & token, Base b)
 {
 	Token * t;
 
-	if (Token::isOperand(token)) {
+	if (Token::isOperand(token, b)) {
 		t = new Operand(token, b);
 	}
 	else if (Token::isOperator(token)) {
@@ -869,8 +891,6 @@ Token * TokenFactory::createToken(const string & token, Base b)
 					__LINE__);
 	}
 
-    t->setMode(b);
-    
 	return t;
 }
 
