@@ -324,52 +324,25 @@ cl_N Calculator::evaluate(const string & expression, string * resultBuffer)
         if (dbg->getDebugState()) {
 			cout << "RPN: Got Result - DoubleValue [" << f << "], IntValue [" << i << "]"<< endl;
 		}
+
+        o->toString(this->getMode(), resultBuffer);
+        
+        switch (this->getMode()) {
+            case Dec:
+                result = f;
+                break;
+                
+            case Hex:
+                result = i;
+                break;
+                
+            case Bin:
+                result = i;
+                break;
+        }
         
 		delete o;
 		delete stack;
-
-        if (this->getMode() == Dec) {
-            cl_print_flags cpf;
-            cpf.default_float_format = float_format(f);
-
-            stringstream buf;
-
-            print_float(buf, cpf, f);
-
-            *resultBuffer = buf.str();
-            
-            if (dbg->getDebugState()) {
-                cout << "RPN: Decimal Result - '" << *resultBuffer << "'"<< endl;
-            }
-            
-            result = f;
-        }
-        else if (this->getMode() == Hex) {
-            stringstream buf;
-
-            fprinthexadecimal(buf, i);
-
-            *resultBuffer = "0x" + buf.str();
-
-            if (dbg->getDebugState()) {
-                cout << "RPN: Hexadecimal Result - '" << *resultBuffer << "'"<< endl;
-            }
-            
-            result = i;
-        }
-        else if (this->getMode() == Bin) {
-            stringstream buf;
-
-            fprintbinary(buf, i);
-
-            *resultBuffer = "b" + buf.str();
-
-            if (dbg->getDebugState()) {
-                cout << "RPN: Binary Result - '" << *resultBuffer << "'"<< endl;
-            }
-            
-            result = i;
-        }
 	}
 	else {
 		delete stack;
@@ -398,4 +371,9 @@ string * Calculator::evaluate(const string & expression)
 void Calculator::store(int memoryNum, cl_N result)
 {
 	Function::memoryStore(memoryNum, result);
+}
+
+cl_N Calculator::recall(int memoryNum)
+{
+	return Function::memoryRecall(memoryNum);
 }

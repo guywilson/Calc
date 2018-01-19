@@ -85,35 +85,39 @@ int main(int argc, char *argv[])
 
 			calc->store(memoryNum, result);
 		}
+		else if (calculation.compare(0, 5, "memr") == 0) {
+            for (i = 0;i < 10;i++) {
+                string s;
+                cl_N mem = calc->recall(i);
+                Operand::toString(mem, calc->getMode(), &s);
+                cout << "[" << i << "] = " << s << "; ";
+            }
+            
+            cout << endl;
+		}
 		else if (calculation.compare(0, 3, "dec") == 0) {
             calc->setMode(Dec);
 
-            cl_print_flags cpf;
-            cpf.default_float_format = float_format(16);
-
-            cl_F f = cl_float(realpart(result), float_format(16));
+            string s;
+            Operand::toString(result, Dec, &s);
             
-            stringstream buf;
-
-            print_real(buf, cpf, f);
-            
-            cout << "Result = " << buf.str() << endl;
+            cout << "Result = " << s << endl;
 		}
 		else if (calculation.compare(0, 3, "hex") == 0) {
             calc->setMode(Hex);
             
-            stringstream buf;
-            fprinthexadecimal(buf, floor1(realpart(result)));
+            string s;
+            Operand::toString(result, Hex, &s);
             
-            cout << "Result = 0x" << buf.str() << endl;
+            cout << "Result = " << s << endl;
 		}
 		else if (calculation.compare(0, 3, "bin") == 0) {
             calc->setMode(Bin);
             
-            stringstream buf;
-            fprintbinary(buf, floor1(realpart(result)));
+            string s;
+            Operand::toString(result, Bin, &s);
             
-            cout << "Result = b" << buf.str() << endl;
+            cout << "Result = " << s << endl;
 		}
 		else if (calculation.compare(0, 4, "help") == 0 || calculation[0] == '?') {
 			printHelp();

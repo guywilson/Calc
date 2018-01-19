@@ -1,4 +1,7 @@
 #include <iostream>
+#include <cstring>
+#include <sstream>
+#include <string>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -552,16 +555,22 @@ cl_N Operand::getValue()
 
 cl_F Operand::getDoubleValue()
 {
-	return cl_float(realpart(this->_value), float_format(16));
+	return Operand::getDoubleValue(this->_value);
+}
+
+cl_F Operand::getDoubleValue(cl_N value)
+{
+	return cl_float(realpart(value), float_format(16));
 }
 
 cl_I Operand::getIntValue()
 {
-	cl_I		intValue;
+	return Operand::getIntValue(this->_value);
+}
 
-	intValue = floor1(realpart(this->_value));
-
-	return intValue;
+cl_I Operand::getIntValue(cl_N value)
+{
+	return floor1(realpart(value));
 }
 
 void Operand::setValue(cl_F x)
@@ -577,6 +586,47 @@ void Operand::setValue(cl_N n)
 void Operand::setValue(cl_I i)
 {
 	_value = cl_float(i, float_format(FLOAT_PRECISION));
+}
+
+void Operand::toString(Base b, string * s)
+{
+    Operand::toString(this->_value, b, s);
+}
+
+void Operand::toString(cl_N value, Base b, string * s)
+{
+    cl_F            f;
+    cl_I            i;
+    cl_print_flags  cpf;
+    stringstream    buf;
+
+    switch (b) {
+        case Dec:
+            f = Operand::getDoubleValue(value);
+            
+            cpf.default_float_format = float_format(f);
+            
+            print_float(buf, cpf, f);
+
+            *s = buf.str();
+            break;
+            
+        case Hex:
+            i = Operand::getIntValue(value);
+            
+            fprinthexadecimal(buf, i);
+
+            *s = "0x" + buf.str();
+            break;
+            
+        case Bin:
+            i = Operand::getIntValue(value);
+            
+            fprintbinary(buf, i);
+
+            *s = "b" + buf.str();
+            break;
+    }
 }
 
 
@@ -612,55 +662,77 @@ Const Constant::getConstant()
 
 Function::Function(const string & token, Base b) : Operator(token, "Function")
 {
-    setMode(b);
+    bool        error = false;
     
-    if (getMode() != Dec) {
-        throw new Exception(
-                    ERR_INVALID_TOKEN,
-                    "Invalid token found for mode",
-                    __FILE__,
-                    "Function",
-                    "init()",
-                    __LINE__);
-    }
+    setMode(b);
         
 	if (Token::isFunctionSine(token)) {
+        if (getMode() != Dec) {
+            error = true;
+        }
 		function = Sine;
 		numArguments = 1;
 	}
 	else if (Token::isFunctionCosine(token)) {
+        if (getMode() != Dec) {
+            error = true;
+        }
 		function = Cosine;
 		numArguments = 1;
 	}
 	else if (Token::isFunctionTangent(token)) {
+        if (getMode() != Dec) {
+            error = true;
+        }
 		function = Tangent;
 		numArguments = 1;
 	}
 	else if (Token::isFunctionArcSine(token)) {
+        if (getMode() != Dec) {
+            error = true;
+        }
 		function = ArcSine;
 		numArguments = 1;
 	}
 	else if (Token::isFunctionArcCosine(token)) {
+        if (getMode() != Dec) {
+            error = true;
+        }
 		function = ArcCosine;
 		numArguments = 1;
 	}
 	else if (Token::isFunctionArcTangent(token)) {
+        if (getMode() != Dec) {
+            error = true;
+        }
 		function = ArcTangent;
 		numArguments = 1;
 	}
 	else if (Token::isFunctionSquareRoot(token)) {
+        if (getMode() != Dec) {
+            error = true;
+        }
 		function = SquareRoot;
 		numArguments = 1;
 	}
 	else if (Token::isFunctionLogarithm(token)) {
+        if (getMode() != Dec) {
+            error = true;
+        }
 		function = Logarithm;
 		numArguments = 1;
 	}
 	else if (Token::isFunctionNaturalLog(token)) {
+        if (getMode() != Dec) {
+            error = true;
+        }
 		function = NaturalLog;
 		numArguments = 1;
 	}
 	else if (Token::isFunctionFactorial(token)) {
+        if (getMode() != Dec) {
+            error = true;
+        }
 		function = Factorial;
 		numArguments = 1;
 	}
@@ -670,6 +742,16 @@ Function::Function(const string & token, Base b) : Operator(token, "Function")
 	}
 
 	setPrecedence(5);
+    
+    if (error) {
+        throw new Exception(
+                    ERR_INVALID_TOKEN,
+                    "Invalid token found for mode",
+                    __FILE__,
+                    "Function",
+                    "init()",
+                    __LINE__);
+    }
 }
 
 Operand * Function::evaluate(Operand & arg1)
@@ -750,6 +832,11 @@ cl_I Function::_factorial(cl_I arg)
 void Function::memoryStore(int memoryNum, cl_N value)
 {
 	_memory[memoryNum] = value;
+}
+
+cl_N Function::memoryRecall(int memoryNum)
+{
+	return _memory[memoryNum];
 }
 
 

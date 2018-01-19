@@ -129,11 +129,16 @@ class Operand : public Token
 
         cl_N            getValue();
 		cl_F			getDoubleValue();
+        static cl_F     getDoubleValue(cl_N value);
 		cl_I			getIntValue();
+		static cl_I		getIntValue(cl_N value);
 
 		virtual bool	isOperand() {
 							return true;
 						}
+
+        void            toString(Base b, string * s);
+        static void     toString(cl_N value, Base b, string * s);
 };
 
 class Operator : public Token
@@ -208,6 +213,7 @@ class Function : public Operator
 		Operand *		evaluate(Operand & arg1);
 
 		static void		memoryStore(int memoryNum, cl_N value);
+        static cl_N     memoryRecall(int memoryNum);
 
 		int				getNumArguments() {
 							return numArguments;

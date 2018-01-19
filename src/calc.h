@@ -13,23 +13,23 @@ using namespace cln;
 class Calculator
 {
 	private:
-        Base          _base;
-        cl_N          _memory[10] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+        Base            _base;
         
-		void          _convertToRPN(const string & expression, Queue * outputQueue);
+		void            _convertToRPN(const string & expression, Queue * outputQueue);
 
 	public:
-                      Calculator();
+                        Calculator();
                       
-        Base          getMode();
-        void          setMode(Base b);
+        Base            getMode();
+        void            setMode(Base b);
         
-        string        getModeStr();
+        string          getModeStr();
                       
-		cl_N          evaluate(const string & expression, string * resultBuffer);
-		string *      evaluate(const string & expression);
+		cl_N            evaluate(const string & expression, string * resultBuffer);
+		string *        evaluate(const string & expression);
 
-		void          store(int memoryNum, cl_N result);
+		void            store(int memoryNum, cl_N result);
+        cl_N            recall(int memoryNum);
 };
 
 #endif
