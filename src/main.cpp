@@ -169,6 +169,7 @@ void printHelp(void)
 	cout << "\tc\tthe speed of light in a vacuum" << endl << endl;
 	cout << "Commands supported:" << endl;
 	cout << "\tmemstn\tStore the last result in memory location n (0 - 9)" << endl;
+	cout << "\tmemr\tRecall memory contents of all locations" << endl;
     cout << "\tdec\tSwitch to decimal mode" << endl;
     cout << "\thex\tSwitch to hexadecimal mode" << endl;
     cout << "\tbin\tSwitch to binary mode" << endl;
