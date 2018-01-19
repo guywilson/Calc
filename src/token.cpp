@@ -90,6 +90,16 @@ bool Token::isBinDigit(const char digit)
     }
 }
 
+bool Token::isOctDigit(const char digit)
+{
+    if (!(digit >= '0' && digit <= '7')) {
+        return false;
+    }
+    else {
+        return true;
+    }
+}
+
 bool Token::isOperand(const string & token, const Base b) {
 	int		i;
 	bool	ret = true;
@@ -118,6 +128,13 @@ bool Token::isOperand(const string & token, const Base b) {
                     
                 case Bin:
                     if (!isBinDigit(token[i])) {
+                        ret = false;
+                        break;
+                    }
+                    break;
+                    
+                case Oct:
+                    if (!isOctDigit(token[i])) {
                         ret = false;
                         break;
                     }
@@ -483,6 +500,9 @@ Operand::Operand(const string & token, Base b) : Token(token, "Operand")
     else if (b == Bin) {
         _value = strtoll(operand.c_str(), NULL, 2);
     }
+    else if (b == Oct) {
+        _value = strtoll(operand.c_str(), NULL, 8);
+    }
 }
 
 Operand::Operand(cl_F x)
@@ -647,6 +667,14 @@ void Operand::toString(cl_N value, Base b, string * s)
             fprintbinary(buf, i);
 
             *s = "b" + buf.str();
+            break;
+            
+        case Oct:
+            i = Operand::getIntValue(value);
+            
+            fprintoctal(buf, i);
+
+            *s = "o" + buf.str();
             break;
     }
 }

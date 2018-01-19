@@ -21,6 +21,7 @@ class Token
         static bool     isDecDigit(const char digit);
         static bool     isHexDigit(const char digit);
         static bool     isBinDigit(const char digit);
+        static bool     isOctDigit(const char digit);
 
 	protected:
 		Token(const string & token, const string & className);
@@ -94,9 +95,6 @@ class Operand : public Token
 	private:
 		cl_N			_value;
         
-        void            hex2dec();
-        void            bin2dec();
-
 	protected:
 		void 			setValue(cl_F x);
 		void 			setValue(cl_I i);

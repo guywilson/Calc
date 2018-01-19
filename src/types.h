@@ -20,7 +20,8 @@ typedef enum
 {
     Dec         = 0x0A,
     Hex         = 0x0B,
-    Bin         = 0x0C
+    Bin         = 0x0C,
+    Oct         = 0x0D
 }
 Base;
 

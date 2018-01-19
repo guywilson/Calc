@@ -225,6 +225,10 @@ string Calculator::getModeStr()
         case Bin:
             mode = "BIN";
             break;
+            
+        case Oct:
+            mode = "OCT";
+            break;
     }
     
     return mode;
@@ -337,6 +341,10 @@ cl_N Calculator::evaluate(const string & expression, string * resultBuffer)
                 break;
                 
             case Bin:
+                result = i;
+                break;
+                
+            case Oct:
                 result = i;
                 break;
         }

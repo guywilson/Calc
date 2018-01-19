@@ -119,6 +119,14 @@ int main(int argc, char *argv[])
             
             cout << "Result = " << s << endl;
 		}
+		else if (calculation.compare(0, 3, "oct") == 0) {
+            calc->setMode(Oct);
+            
+            string s;
+            Operand::toString(result, Oct, &s);
+            
+            cout << "Result = " << s << endl;
+		}
 		else if (calculation.compare(0, 4, "help") == 0 || calculation[0] == '?') {
 			printHelp();
 		}
@@ -173,6 +181,7 @@ void printHelp(void)
     cout << "\tdec\tSwitch to decimal mode" << endl;
     cout << "\thex\tSwitch to hexadecimal mode" << endl;
     cout << "\tbin\tSwitch to binary mode" << endl;
+    cout << "\toct\tSwitch to octal mode" << endl;
 	cout << "\ttest\tSelf test of the calculator" << endl;
 	cout << "\thelp\tThis help text" << endl;
 	cout << "\tdbgon\tTurn on debugging output" << endl;
