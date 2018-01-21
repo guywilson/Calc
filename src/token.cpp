@@ -466,12 +466,8 @@ Operand::Operand(const string & token, Base b) : Token(token, "Operand")
 	int		tokenLen;
 	int		i = 0;
 	bool	isFloat = false;
-	char	szPrecision[8];
-	string 	operand;
 
 	tokenLen = token.length();
-
-	operand = token;
 
     setMode(b);
     
@@ -485,23 +481,23 @@ Operand::Operand(const string & token, Base b) : Token(token, "Operand")
             i++;
         }
 
-        if (!isFloat) {
-            operand += ".0";
+        if (isFloat) {
+            cl_F f = token.c_str();
+            _value = f;
         }
-
-        sprintf(szPrecision, "_%d", FLOAT_PRECISION);
-        operand += szPrecision;
-
-        _value = operand.c_str();
+        else {
+            cl_I i = token.c_str();
+            _value = i;
+        }
     }
     else if (b == Hex) {
-        _value = strtoll(operand.c_str(), NULL, 16);
+        _value = strtoll(token.c_str(), NULL, BASE_HEX);
     }
     else if (b == Bin) {
-        _value = strtoll(operand.c_str(), NULL, 2);
+        _value = strtoll(token.c_str(), NULL, BASE_BIN);
     }
     else if (b == Oct) {
-        _value = strtoll(operand.c_str(), NULL, 8);
+        _value = strtoll(token.c_str(), NULL, BASE_OCT);
     }
 }
 
@@ -602,7 +598,7 @@ cl_F Operand::getDoubleValue()
 
 cl_F Operand::getDoubleValue(cl_N value)
 {
-	return cl_float(realpart(value), float_format(16));
+	return cl_float(realpart(value), float_format(FLOAT_PRECISION));
 }
 
 cl_I Operand::getIntValue()
@@ -630,12 +626,12 @@ void Operand::setValue(cl_I i)
 	_value = cl_float(i, float_format(FLOAT_PRECISION));
 }
 
-void Operand::toString(Base b, string * s)
+void Operand::toString(Base b, string & s)
 {
     Operand::toString(this->_value, b, s);
 }
 
-void Operand::toString(cl_N value, Base b, string * s)
+void Operand::toString(cl_N value, Base b, string & s)
 {
     cl_F            f;
     cl_I            i;
@@ -646,11 +642,11 @@ void Operand::toString(cl_N value, Base b, string * s)
         case Dec:
             f = Operand::getDoubleValue(value);
             
-            cpf.default_float_format = float_format(f);
+            cpf.default_float_format = float_format(FLOAT_PRECISION);
             
             print_float(buf, cpf, f);
 
-            *s = buf.str();
+            s = buf.str();
             break;
             
         case Hex:
@@ -658,7 +654,7 @@ void Operand::toString(cl_N value, Base b, string * s)
             
             fprinthexadecimal(buf, i);
 
-            *s = "0x" + buf.str();
+            s = "0x" + buf.str();
             break;
             
         case Bin:
@@ -666,7 +662,7 @@ void Operand::toString(cl_N value, Base b, string * s)
             
             fprintbinary(buf, i);
 
-            *s = "b" + buf.str();
+            s = "b" + buf.str();
             break;
             
         case Oct:
@@ -674,39 +670,32 @@ void Operand::toString(cl_N value, Base b, string * s)
             
             fprintoctal(buf, i);
 
-            *s = "o" + buf.str();
+            s = "o" + buf.str();
             break;
     }
 }
 
 
-Constant::Constant(const string & token, Base b) : Operand(token, "Constant")
+Constant::Constant(const string & token, Base b) : Operand(Constant::constToStrValue(token), b)
 {
     setMode(b);
-    
-    if (getMode() != Dec) {
-        throw new Exception(
-                    ERR_INVALID_TOKEN,
-                    "Invalid token found for mode",
-                    __FILE__,
-                    "Function",
-                    "init()",
-                    __LINE__);
-    }
-        
-	if (Token::isConstantPi(token)) {
-		constant = Pi;
-		setValue(pi(float_format(FLOAT_PRECISION)));
-	}
-	else if (Token::isConstantC(token)) {
-		constant = C;
-		setValue(cl_float(299792458.0, float_format(FLOAT_PRECISION))); // in m/s
-	}
 }
 
 Const Constant::getConstant()
 {
 	return this->constant;
+}
+
+string & Constant::constToStrValue(const string & constant)
+{
+	if (Token::isConstantPi(constant)) {
+        Operand::toString(pi(float_format(FLOAT_PRECISION)), Dec, this->strValue);
+	}
+	else if (Token::isConstantC(constant)) {
+        this->strValue = "299792458"; // in m/s
+	}
+    
+    return this->strValue;
 }
 
 

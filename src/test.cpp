@@ -9,6 +9,7 @@
 #include "test.h"
 #include "calc.h"
 #include "exception.h"
+#include "token.h"
 
 using namespace std;
 using namespace cln;
@@ -33,27 +34,31 @@ int assertEqualTo(double actualResult, double expectedResult)
 	}
 }
 
-bool testCalculation(string & calculation, double expectedResult)
+bool testCalculation(Calculator * calc, string & calculation, double expectedResult)
 {
 	cl_N		result = 0.0;
 	bool		isSuccess = true;
 	string		resultBuffer;
 
-
 	cout << "\nTesting calculation:" << endl;
 	cout << "\t" << calculation << endl;;
 
-    Calculator * calc = new Calculator();
-	result = calc->evaluate(calculation, &resultBuffer);
-    delete calc;
+	try {
+		result = calc->evaluate(calculation, resultBuffer);
+	}
+	catch (Exception * e) {
+		cout << "Exception caught: " << e->getExceptionString() << endl << endl;
+		cout << "ERROR - CALCULATOR FAILURE!!" << endl;
+		return false;
+	}
     
-	cout << "\tActual ["  << std::setprecision(4) << double_approx(cl_float(realpart(result), float_format(16))) << "] Expected [" << expectedResult << "]" << endl;
-	isSuccess = (assertEqualTo(double_approx(cl_float(realpart(result), float_format(16))), expectedResult) != 0);
+	cout << "\tActual ["  << std::setprecision(4) << double_approx(cl_float(realpart(result), float_format(FLOAT_PRECISION))) << "] Expected [" << expectedResult << "]" << endl;
+	isSuccess = (assertEqualTo(double_approx(cl_float(realpart(result), float_format(FLOAT_PRECISION))), expectedResult) != 0);
 
 	return isSuccess;
 }
 
-bool testValidation(string & calculation)
+bool testValidation(Calculator * calc, string & calculation)
 {
 	string		resultBuffer;
 	bool		isSuccess = false;
@@ -62,9 +67,7 @@ bool testValidation(string & calculation)
 	cout << "\t" << calculation << endl;
 
 	try {
-        Calculator * calc = new Calculator();
-		calc->evaluate(calculation, &resultBuffer);
-        delete calc;
+		calc->evaluate(calculation, resultBuffer);
 	}
 	catch (Exception * e) {
 		cout << "Exception caught: " << e->getExceptionString() << endl << endl;
@@ -106,10 +109,12 @@ bool runTestSuite(void)
 	**
 	**************************************************************************/
 
-	for (i = 0;i < 9;i++) {
+    Calculator * calc = new Calculator();
+
+    for (i = 0;i < 9;i++) {
 		testCount++;
 		calculation = testCalculations[i].testCalc;
-		if (testCalculation(calculation, testCalculations[i].expected)) {
+		if (testCalculation(calc, calculation, testCalculations[i].expected)) {
 			passCount++;
 		}
 		else {
@@ -120,7 +125,7 @@ bool runTestSuite(void)
 	for (i = 0;i < 4;i++) {
 		testCount++;
 		calculation = testValidations[i];
-		if (testValidation(calculation)) {
+		if (testValidation(calc, calculation)) {
 			passCount++;
 		}
 		else {
@@ -128,6 +133,8 @@ bool runTestSuite(void)
 		}
 	}
 
+    delete calc;
+    
 	/**************************************************************************
 	**
 	** END TESTS

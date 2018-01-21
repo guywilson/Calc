@@ -6,7 +6,12 @@
 #ifndef _INCL_TOKEN
 #define _INCL_TOKEN
 
-#define FLOAT_PRECISION		64
+#define FLOAT_PRECISION		40
+
+#define BASE_HEX            16
+#define BASE_DEC            10
+#define BASE_OCT             8
+#define BASE_BIN             2
 
 using namespace std;
 using namespace cln;
@@ -135,8 +140,8 @@ class Operand : public Token
 							return true;
 						}
 
-        void            toString(Base b, string * s);
-        static void     toString(cl_N value, Base b, string * s);
+        void            toString(Base b, string & s);
+        static void     toString(cl_N value, Base b, string & s);
 };
 
 class Operator : public Token
@@ -185,6 +190,7 @@ class Constant : public Operand
 {
 	private:
 		Const			constant;
+        string          strValue;
 
 		cl_F			_pi();
 
@@ -196,6 +202,8 @@ class Constant : public Operand
 		virtual bool	isConstant() {
 							return true;
 						}
+                        
+        string &        constToStrValue(const string & constant);
 };
 
 class Function : public Operator

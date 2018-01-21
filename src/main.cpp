@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
             for (i = 0;i < 10;i++) {
                 string s;
                 cl_N mem = calc->recall(i);
-                Operand::toString(mem, calc->getMode(), &s);
+                Operand::toString(mem, calc->getMode(), s);
                 cout << "[" << i << "] = " << s << "; ";
             }
             
@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
             calc->setMode(Dec);
 
             string s;
-            Operand::toString(result, Dec, &s);
+            Operand::toString(result, Dec, s);
             
             cout << "Result = " << s << endl;
 		}
@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
             calc->setMode(Hex);
             
             string s;
-            Operand::toString(result, Hex, &s);
+            Operand::toString(result, Hex, s);
             
             cout << "Result = " << s << endl;
 		}
@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
             calc->setMode(Bin);
             
             string s;
-            Operand::toString(result, Bin, &s);
+            Operand::toString(result, Bin, s);
             
             cout << "Result = " << s << endl;
 		}
@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
             calc->setMode(Oct);
             
             string s;
-            Operand::toString(result, Oct, &s);
+            Operand::toString(result, Oct, s);
             
             cout << "Result = " << s << endl;
 		}
@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
 		}
 		else {
 			try {
-				result = calc->evaluate(calculation, &resultBuffer);
+				result = calc->evaluate(calculation, resultBuffer);
 
 				cout << calculation << " = " << resultBuffer << endl;
                 

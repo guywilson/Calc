@@ -5,15 +5,15 @@
 
 using namespace std;
 
-string * calculate(const string & expression)
-{
-	string * r;
+string result;
 
+string & calculate(const string & expression)
+{
     Calculator * calc = new Calculator();
     
-	r = calc->evaluate(expression);
+	result = calc->evaluate(expression);
 
     delete calc;
     
-	return r;
+	return result;
 }

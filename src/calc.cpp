@@ -234,7 +234,7 @@ string Calculator::getModeStr()
     return mode;
 }
 
-cl_N Calculator::evaluate(const string & expression, string * resultBuffer)
+cl_N Calculator::evaluate(const string & expression, string & resultBuffer)
 {
 	cl_N 						result;
 	istreambuf_iterator<char>	eos;
@@ -367,13 +367,13 @@ cl_N Calculator::evaluate(const string & expression, string * resultBuffer)
 	return result;
 }
 
-string * Calculator::evaluate(const string & expression)
+string & Calculator::evaluate(const string & expression)
 {
 	string * pResult = new string();
 
-	Calculator::evaluate(expression, pResult);
+	Calculator::evaluate(expression, *pResult);
 
-	return pResult;
+	return *pResult;
 }
 
 void Calculator::store(int memoryNum, cl_N result)

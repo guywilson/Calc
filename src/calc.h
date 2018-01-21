@@ -25,8 +25,8 @@ class Calculator
         
         string          getModeStr();
                       
-		cl_N            evaluate(const string & expression, string * resultBuffer);
-		string *        evaluate(const string & expression);
+		cl_N            evaluate(const string & expression, string & resultBuffer);
+		string &        evaluate(const string & expression);
 
 		void            store(int memoryNum, cl_N result);
         cl_N            recall(int memoryNum);
