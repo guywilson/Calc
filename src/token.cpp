@@ -8,6 +8,7 @@
 #include <math.h>
 
 #include "secure_func.h"
+#include "system.h"
 #include "token.h"
 #include "exception.h"
 #include "debug.h"
@@ -466,6 +467,7 @@ Operand::Operand(const string & token, Base b) : Token(token, "Operand")
 	int		tokenLen;
 	int		i = 0;
 	bool	isFloat = false;
+    char    szFloat[128];
 
 	tokenLen = token.length();
 
@@ -482,7 +484,8 @@ Operand::Operand(const string & token, Base b) : Token(token, "Operand")
         }
 
         if (isFloat) {
-            cl_F f = token.c_str();
+            sprintf(szFloat, "%s_%d", token.c_str(), FLOAT_PRECISION);
+            cl_F f = szFloat;
             _value = f;
         }
         else {
@@ -635,18 +638,28 @@ void Operand::toString(cl_N value, Base b, string & s)
 {
     cl_F            f;
     cl_I            i;
-    cl_print_flags  cpf;
     stringstream    buf;
+    char            buffer[128];
+    string          fmt;
 
     switch (b) {
         case Dec:
-            f = Operand::getDoubleValue(value);
-            
-            cpf.default_float_format = float_format(FLOAT_PRECISION);
-            
-            print_float(buf, cpf, f);
+            if (System::getPrecision() > 0) {
+                f = Operand::getDoubleValue(value);
 
-            s = buf.str();
+                fmt = "%." + std::to_string(System::getPrecision()) + "f";
+
+                sprintf(buffer, fmt.c_str(), double_approx(f));
+
+                s = buffer;
+            }
+            else {
+                i = Operand::getIntValue(value);
+                
+                fprintdecimal(buf, i);
+                
+                s = buf.str();
+            }
             break;
             
         case Hex:

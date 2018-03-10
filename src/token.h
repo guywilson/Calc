@@ -6,13 +6,6 @@
 #ifndef _INCL_TOKEN
 #define _INCL_TOKEN
 
-#define FLOAT_PRECISION		40
-
-#define BASE_HEX            16
-#define BASE_DEC            10
-#define BASE_OCT             8
-#define BASE_BIN             2
-
 using namespace std;
 using namespace cln;
 

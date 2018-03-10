@@ -9,6 +9,7 @@
 
 #include "secure_func.h"
 #include "types.h"
+#include "system.h"
 #include "token.h"
 #include "calc.h"
 #include "test.h"
@@ -127,6 +128,21 @@ int main(int argc, char *argv[])
             
             cout << "Result = " << s << endl;
 		}
+		else if (calculation.compare(0, 4, "setp") == 0) {
+			int precision = 0;
+
+			if (calculation.length() > 4) {
+				precision = atoi(calculation.substr(4).c_str());
+                
+                if (precision < 0 || precision > 40) {
+                    cout << "Precision must be between 0 and 40" << endl;
+                    loop = false;
+                }
+                else {
+                    System::setPrecision(precision);
+                }
+			}
+		}
 		else if (calculation.compare(0, 4, "help") == 0 || calculation[0] == '?') {
 			printHelp();
 		}
@@ -182,6 +198,7 @@ void printHelp(void)
     cout << "\thex\tSwitch to hexadecimal mode" << endl;
     cout << "\tbin\tSwitch to binary mode" << endl;
     cout << "\toct\tSwitch to octal mode" << endl;
+    cout << "\tsetpn\tSet the precision to n" << endl;
 	cout << "\ttest\tSelf test of the calculator" << endl;
 	cout << "\thelp\tThis help text" << endl;
 	cout << "\tdbgon\tTurn on debugging output" << endl;

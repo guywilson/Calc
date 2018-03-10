@@ -5,6 +5,7 @@
 #include <cln/cln.h>
 
 #include "secure_func.h"
+#include "system.h"
 #include "types.h"
 #include "test.h"
 #include "calc.h"
