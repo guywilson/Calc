@@ -28,7 +28,7 @@ LINKER=g++
 CPPFLAGS=-c -fpermissive -fPIC -Wall -std=c++11
 
 # Object files (in linker ',' seperated format)
-LIBFILES=$(BUILD)/calclib.o $(BUILD)/token.o $(BUILD)/calc.o $(BUILD)/stack.o $(BUILD)/exception.o $(BUILD)/debug.o $(BUILD)/test.o
+LIBFILES=$(BUILD)/calclib.o $(BUILD)/system.o $(BUILD)/token.o $(BUILD)/calc.o $(BUILD)/stack.o $(BUILD)/exception.o $(BUILD)/debug.o $(BUILD)/test.o
 OBJFILES=$(LIBFILES) $(BUILD)/main.o
 
 # Target
@@ -39,10 +39,13 @@ all: $(TARGET)
 $(BUILD)/calclib.o: $(SOURCE)/calclib.cpp $(SOURCE)/calclib.h $(SOURCE)/calc.h
 	$(CPP) $(CPPFLAGS) -o $(BUILD)/calclib.o $(SOURCE)/calclib.cpp
 
-$(BUILD)/main.o: $(SOURCE)/main.cpp $(SOURCE)/calc.h $(SOURCE)/token.h $(SOURCE)/types.h $(SOURCE)/exception.h $(SOURCE)/debug.h
+$(BUILD)/system.o: $(SOURCE)/system.cpp $(SOURCE)/system.h
+	$(CPP) $(CPPFLAGS) -o $(BUILD)/system.o $(SOURCE)/system.cpp
+
+$(BUILD)/main.o: $(SOURCE)/main.cpp $(SOURCE)/calc.h $(SOURCE)/system.h $(SOURCE)/token.h $(SOURCE)/types.h $(SOURCE)/exception.h $(SOURCE)/debug.h
 	$(CPP) $(CPPFLAGS) -o $(BUILD)/main.o $(SOURCE)/main.cpp
 
-$(BUILD)/token.o: $(SOURCE)/token.cpp $(SOURCE)/token.h $(SOURCE)/types.h $(SOURCE)/exception.h $(SOURCE)/debug.h
+$(BUILD)/token.o: $(SOURCE)/token.cpp $(SOURCE)/system.h $(SOURCE)/token.h $(SOURCE)/types.h $(SOURCE)/exception.h $(SOURCE)/debug.h
 	$(CPP) $(CPPFLAGS) -o $(BUILD)/token.o $(SOURCE)/token.cpp
 
 $(BUILD)/calc.o: $(SOURCE)/calc.cpp $(SOURCE)/calc.h $(SOURCE)/token.h $(SOURCE)/stack.h $(SOURCE)/types.h $(SOURCE)/exception.h $(SOURCE)/debug.h
@@ -57,7 +60,7 @@ $(BUILD)/exception.o: $(SOURCE)/exception.cpp $(SOURCE)/exception.h $(SOURCE)/ty
 $(BUILD)/debug.o: $(SOURCE)/debug.cpp $(SOURCE)/debug.h
 	$(CPP) $(CPPFLAGS) -o $(BUILD)/debug.o $(SOURCE)/debug.cpp
 
-$(BUILD)/test.o: $(SOURCE)/test.cpp $(SOURCE)/test.h $(SOURCE)/token.h $(SOURCE)/types.h
+$(BUILD)/test.o: $(SOURCE)/test.cpp $(SOURCE)/test.h $(SOURCE)/system.h $(SOURCE)/token.h $(SOURCE)/types.h
 	$(CPP) $(CPPFLAGS) -o $(BUILD)/test.o $(SOURCE)/test.cpp
 
 $(TARGET): $(OBJFILES)
