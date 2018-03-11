@@ -134,9 +134,8 @@ int main(int argc, char *argv[])
 			if (calculation.length() > 4) {
 				precision = atoi(calculation.substr(4).c_str());
                 
-                if (precision < 0 || precision > 40) {
-                    cout << "Precision must be between 0 and 40" << endl;
-                    loop = false;
+                if (precision < 0 || precision > MAX_DISPLAY_PRECISION) {
+                    cout << "Precision must be between 0 and " << std::to_string(MAX_DISPLAY_PRECISION) << endl << endl;
                 }
                 else {
                     System::setPrecision(precision);
