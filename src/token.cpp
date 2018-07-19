@@ -984,7 +984,7 @@ int CalcTokenizer::_findNextTokenPos()
 				if (ch == '-' && isdigit(_expression[i + 1])) {
 					bool isNegativeOperand = false;
 
-					if (i > 1) {
+					if (i > 0) {
 						bool isPreviousCharBrace = Token::isBraceRight(_expression[i - 1]);
 						bool isPreviousCharDigit = isdigit(_expression[i - 1]) != 0 ? true : false;
 
