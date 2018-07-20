@@ -27,7 +27,7 @@ CPP=g++
 LINKER=g++
 
 # C compiler flags (Release)
-CPPFLAGS=-c -fpermissive -std=c++11 -O2 -I$(TOOLS)\include
+CPPFLAGS=-c -O3 -fpermissive -std=c++11 -O2 -I$(TOOLS)\include
 
 # Object files (in linker ',' seperated format)
 LIBFILES=$(BUILD)/calclib.o $(BUILD)/token.o $(BUILD)/calc.o $(BUILD)/stack.o $(BUILD)/exception.o $(BUILD)/debug.o $(BUILD)/test.o

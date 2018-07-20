@@ -996,7 +996,7 @@ int CalcTokenizer::_findNextTokenPos()
 						}
 					}
 					else if (i == 0) {
-						// We're at the begininng of the expression, must be
+						// We're at the beginning of the expression, must be
 						// a -ve operand
 						isNegativeOperand = true;
 					}
